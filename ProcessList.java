@@ -2,6 +2,7 @@ package planningalgorithm;
 
 import java.util.List;
 import java.util.ArrayList;
+//import java.util.Arrays;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,7 +49,7 @@ public class ProcessList {
         int Erstezeile = tabelle.getFirstRowNum();
         int ZeileNr = findinRow(Erstezeile,"Nr.",tabelle);
         int ZeileName = findinRow(Erstezeile,"Beschreibung",tabelle);
-        //int ZeileVor = findinRow(Erstezeile,"Vorgänger",tabelle);
+        int ZeileVor = findinRow(Erstezeile,"Vorgänger",tabelle);
         //int ZeileNach = findinRow(Erstezeile,"Nachfolger",tabelle);
 
 
@@ -81,17 +82,27 @@ public class ProcessList {
             Row Zeile = rowIterator2.next();
             Cell CellNr = Zeile.getCell(ZeileNr);
             Cell CellName = Zeile.getCell(ZeileName);
+            Cell CellVor = Zeile.getCell(ZeileVor);
 
             CellType cellType = CellNr.getCellTypeEnum();
 
+            // If-Abfrage, ob Cell in Spalte "Nr." eine Zahl ist, wirklich notwendig???
             if (cellType == CellType.NUMERIC){
                 int OpNummer = (int)CellNr.getNumericCellValue();
                 String OpName = CellName.toString();
+                String OpVor = CellVor.toString();
+                String[] StringVor = OpVor.split(";");
+                int[] VorgängerArray = new int[StringVor.length];
+                for (int i=0;i<StringVor.length;i++){
+                    double VorDouble = Double.parseDouble(StringVor[i]);
+                    VorgängerArray[i] = (int)VorDouble;
+                }
 
-                
+
                 Operationen CurrentOp = OpListIterator.next();
                 CurrentOp.Nummer = OpNummer;
                 CurrentOp.Operationsname = OpName;
+                CurrentOp.Vorgänger = VorgängerArray;
             }
             //Operationeniterator++;
         }

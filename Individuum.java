@@ -18,7 +18,6 @@ public class Individuum {
     }
 
 
-
     // Zufallszahl 
     private static double Zufallszahl(){
         double RanNum;
