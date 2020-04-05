@@ -18,8 +18,12 @@ import org.apache.poi.ss.usermodel.Row;
 
 public class ProcessList {
 
-    // bislang leere Klasse mit Hauptmethode ReadoutExcel
+    // Klassenattribute: Präzedenzmatrix
 
+
+
+
+    
     // Methoden
     
     // find in Zeile
@@ -38,7 +42,7 @@ public class ProcessList {
         return gesuchtespalte;
     }
 
-
+    // Liste der Operationen erstellen mit Daten aus Excel gefüttert
     public List<Operationen> ReadoutExcel() throws IOException {
 
         FileInputStream inputStream = new FileInputStream(new File("C:/Users/Henrik/OneDrive/Java Projekte/Prozess1.xls"));
@@ -110,4 +114,6 @@ public class ProcessList {
         System.out.println(OperationenListe.get(6).Operationsname);
         return (OperationenListe);
     }
+
+ 
 }

@@ -33,6 +33,12 @@ public class Population {
 
     public static void main(String[] args) throws IOException {
 
+
+
+
+
+
+
     //Prozess AUSLESEN
 
     int gen = 1;
@@ -40,10 +46,34 @@ public class Population {
 
     ProcessList ProzessRead = new ProcessList();
     List<Operationen> Prozess = ProzessRead.ReadoutExcel(); 
-    
     int nOp = Prozess.size(); 
 
+    double[][] Präzedenzmatrix = new double[nOp][nOp];
+    for (int i=0;i<nOp;i++){
+        for (int j=0;j<Prozess.get(i).Vorgänger.length;j++){
+            int VorProzess = Prozess.get(i).Vorgänger[j];
+            if (VorProzess != 0){
+                Präzedenzmatrix[i][VorProzess-1] = 1;
+            }
+        } 
+    }
+
     System.out.println(Prozess.get(1).Operationsname);
+
+    for (int k=0;k<nOp;k++){
+        System.out.print("\n");
+        for (int l=0;l<nOp;l++)
+        System.out.print(Präzedenzmatrix[k][l] + " ");
+    }
+    
+
+
+
+
+
+
+
+
 
     //INITIALISIERUNG
     // Mehrere Objekte vom Typ Individuum erzeugen und unter einer Liste speichern
@@ -89,6 +119,10 @@ public class Population {
         Population.get(i).Sequenz = RandomSequenz;
      }
     
+
+
+
+
 
 
 
