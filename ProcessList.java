@@ -18,9 +18,17 @@ import org.apache.poi.ss.usermodel.Row;
 
 public class ProcessList {
 
-    // Klassenattribute: Präzedenzmatrix
+    // Klassenattribute
+    int AnzOp;
+    double[][] Präzedenzmatrix;
+    double[][] Maschinenmatrix;
+    List<Operationen> OperationenListe; 
 
 
+    // Konstruktor
+    ProcessList(){
+        AnzOp = 0;
+    }
 
 
     
@@ -42,8 +50,9 @@ public class ProcessList {
         return gesuchtespalte;
     }
 
+
     // Liste der Operationen erstellen mit Daten aus Excel gefüttert
-    public List<Operationen> ReadoutExcel() throws IOException {
+    void ReadoutExcel() throws IOException {
 
         FileInputStream inputStream = new FileInputStream(new File("C:/Users/Henrik/OneDrive/Java Projekte/Prozess1.xls"));
         HSSFWorkbook excelmappe = new HSSFWorkbook(inputStream);
@@ -58,7 +67,7 @@ public class ProcessList {
 
 
         // Anzahl der gesamten Operationen suchen
-        int AnzOp=0;
+        //int AnzOp=0;
         Iterator<Row> rowIterator = tabelle.iterator();
 
         while (rowIterator.hasNext()) {
@@ -69,10 +78,11 @@ public class ProcessList {
                 AnzOp = AnzOp + 1;
             }
         }
+        
 
-
-        // Leere Operationen erstellen
-        List<Operationen> OperationenListe = new ArrayList<Operationen>(AnzOp);
+        // Arrayliste entsprechend Anzahl der Operationen erstellen
+        OperationenListe = new ArrayList<Operationen>(AnzOp);
+        //List<Operationen> OperationenListe = new ArrayList<Operationen>(AnzOp);
         for (int i=0;i<AnzOp;i++) {
             Operationen Op = new Operationen();
             OperationenListe .add(Op);
@@ -112,7 +122,25 @@ public class ProcessList {
         }
         excelmappe.close();
         System.out.println(OperationenListe.get(6).Operationsname);
-        return (OperationenListe);
+
+
+
+
+        // Präzedenzmatrix erstellen aus Operationenliste erstellen
+        Präzedenzmatrix = new double[AnzOp][AnzOp];
+        for (int i=0;i<AnzOp;i++){
+            for (int j=0;j<OperationenListe.get(i).Vorgänger.length;j++){
+            int VorProzess = OperationenListe.get(i).Vorgänger[j];
+                if (VorProzess != 0){
+                Präzedenzmatrix[i][VorProzess-1] = 1;
+                }
+            } 
+        }
+
+
+
+
+
     }
 
  

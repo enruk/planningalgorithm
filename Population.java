@@ -45,18 +45,15 @@ public class Population {
     int p = 100;
 
     ProcessList ProzessRead = new ProcessList();
-    List<Operationen> Prozess = ProzessRead.ReadoutExcel(); 
-    int nOp = Prozess.size(); 
+    ProzessRead.ReadoutExcel();
 
-    double[][] Präzedenzmatrix = new double[nOp][nOp];
-    for (int i=0;i<nOp;i++){
-        for (int j=0;j<Prozess.get(i).Vorgänger.length;j++){
-            int VorProzess = Prozess.get(i).Vorgänger[j];
-            if (VorProzess != 0){
-                Präzedenzmatrix[i][VorProzess-1] = 1;
-            }
-        } 
-    }
+    List<Operationen> Prozess = ProzessRead.OperationenListe; 
+    int nOp = Prozess.size();
+
+    double[][] Praezedenz = ProzessRead.Präzedenzmatrix; 
+    double[][] Maschines = ProzessRead.Maschinenmatrix;
+
+    
 
     System.out.println(Prozess.get(1).Operationsname);
 
