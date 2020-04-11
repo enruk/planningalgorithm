@@ -43,15 +43,17 @@ public class Population {
 
     int gen = 1;
     int p = 100;
+    int AnzMaschinen = 10;
+    
 
     ProcessList ProzessRead = new ProcessList();
-    ProzessRead.ReadoutExcel();
+    ProzessRead.ReadoutExcel(AnzMaschinen);
 
     List<Operationen> Prozess = ProzessRead.OperationenListe; 
     int nOp = Prozess.size();
 
-    double[][] Praezedenz = ProzessRead.Präzedenzmatrix; 
-    double[][] Maschines = ProzessRead.Maschinenmatrix;
+    double[][] Vorrangmatrix = ProzessRead.Präzedenzmatrix; 
+    double[][] MaschinenZeiten = ProzessRead.Maschinenmatrix;
 
     
 
@@ -60,10 +62,14 @@ public class Population {
     for (int k=0;k<nOp;k++){
         System.out.print("\n");
         for (int l=0;l<nOp;l++)
-        System.out.print(Präzedenzmatrix[k][l] + " ");
+        System.out.print(Vorrangmatrix[k][l] + " ");
     }
     
-
+    for (int k=0;k<nOp;k++){
+        System.out.print("\n");
+        for (int l=0;l<AnzMaschinen;l++)
+        System.out.print(MaschinenZeiten[k][l] + " ");
+    }
 
 
 
