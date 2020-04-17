@@ -52,8 +52,8 @@ public class Population {
     List<Operationen> Prozess = ProzessRead.OperationenListe; 
     int nOp = Prozess.size();
 
-    double[][] Vorrangmatrix = ProzessRead.Präzedenzmatrix; 
-    double[][] MaschinenZeiten = ProzessRead.Maschinenmatrix;
+    int[][] Vorrangmatrix = ProzessRead.Präzedenzmatrix; 
+    int[][] MaschinenZeiten = ProzessRead.Maschinenmatrix;
 
     
 
@@ -85,7 +85,7 @@ public class Population {
     // Population erzeugen
     List<Individuum> Population = new ArrayList<Individuum>(100);
     for (int i=0;i<100;i++) {
-        Individuum indi = new Individuum(i,gen);
+        Individuum indi = new Individuum(i,gen,nOp,AnzMaschinen);
         Population .add(indi);
      }
 
@@ -121,9 +121,12 @@ public class Population {
         }
         Population.get(i).Sequenz = RandomSequenz;
      }
-    
 
 
+     // Decodierung der Startpopulation
+     for (int i=0;i<p;i++){
+        Population.get(i).decodierung(nOp,AnzMaschinen,Vorrangmatrix,MaschinenZeiten);
+     }
 
 
 

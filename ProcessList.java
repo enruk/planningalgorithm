@@ -20,8 +20,8 @@ public class ProcessList {
 
     // Klassenattribute
     int AnzOp;
-    double[][] Präzedenzmatrix;
-    double[][] Maschinenmatrix;
+    int[][] Präzedenzmatrix;
+    int[][] Maschinenmatrix;
     List<Operationen> OperationenListe; 
 
 
@@ -156,7 +156,7 @@ public class ProcessList {
 
 
         // Präzedenzmatrix aus Operationenliste erstellen
-        Präzedenzmatrix = new double[AnzOp][AnzOp];
+        Präzedenzmatrix = new int[AnzOp][AnzOp];
         for (int i=0;i<AnzOp;i++){
             for (int j=0;j<OperationenListe.get(i).Vorgänger.length;j++){
             int VorProzess = OperationenListe.get(i).Vorgänger[j];
@@ -168,7 +168,7 @@ public class ProcessList {
 
 
         // Maschinenmatrix aus OperationenListe 
-        Maschinenmatrix = new double[AnzOp][AnzOp];
+        Maschinenmatrix = new int[AnzOp][AnzOp];
         for (int i=0;i<AnzOp;i++){
             for (int j=0;j<AnzMa;j++){
                 Maschinenmatrix[i][j] = OperationenListe.get(i).Bearbeitungszeit[j];
