@@ -42,7 +42,7 @@ public class Population {
     //Prozess AUSLESEN
 
     int gen = 1;
-    int p = 100;
+    int p = 1;
     int AnzMaschinen = 10;
     
 
@@ -92,14 +92,12 @@ public class Population {
 
      //Zufällig Zuordnung in alle Individuen befüllen
      for (int i=0;i<p;i++){
-        int[] RandomAllocation = new int[nOp];
+         int[] RandomAllocation = new int [nOp];
+        double RandomMachine;
         for (int j=0;j<nOp;j++){
-            if (Zufallszahl()>0.5){
-                RandomAllocation[j] = 1;
-            }
-            else{
-                RandomAllocation[j] = 0;
-            } 
+            RandomMachine = round(Zufallszahl() * (AnzMaschinen-1),0)+1;
+            int Machine = (int) RandomMachine; 
+            RandomAllocation[j] = Machine;
         }
          Population.get(i).Zuordnung = RandomAllocation;
      }
@@ -136,16 +134,16 @@ public class Population {
 
     
     // 1-Bit-Mutation ausführen
-    Population.get(66).einbitmutation(nOp);
-    for (int i = 0; i<nOp; i++){
-        System.out.println(Population.get(0).Zuordnung[i]);
-    }
+    //Population.get(66).einbitmutation(nOp);
+    //for (int i = 0; i<nOp; i++){
+    //    System.out.println(Population.get(0).Zuordnung[i]);
+    //}
 
     // Sawp-Mutation
-    Population.get(34).swapmutation(nOp);
-    for (int i = 0; i<nOp; i++){
-        System.out.println(Population.get(0).Sequenz[i]);
-    }
+    //opulation.get(34).swapmutation(nOp);
+    //for (int i = 0; i<nOp; i++){
+    //    System.out.println(Population.get(0).Sequenz[i]);
+    //}
 
 
     

@@ -1,6 +1,9 @@
 package planningalgorithm;
 
 import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
+//import java.util.Arrays;
 
 public class Individuum {
     int Nummer;
@@ -12,6 +15,7 @@ public class Individuum {
     int[][] VorgängerZeiten;
     int[][] StartzeitenMatrix;
     int Geburtsgeneration;
+    List<Machine> Machines;
 
     //Konstruktor
     Individuum(int Num, int startgen, int AnzOp, int AnzMa){
@@ -21,12 +25,12 @@ public class Individuum {
         EndzeitenOp = new int[AnzOp];
         ProzesszeitenOp = new int[AnzOp];
         VorgängerZeiten = new int[AnzOp][AnzOp];
-        StartzeitenMatrix = new int[AnzOp][AnzOp];
+        StartzeitenMatrix = new int[AnzOp][AnzOp+1];
     }
 
 
     // Zufallszahl 
-    private static double Zufallszahl(){
+    private double Zufallszahl(){
         double RanNum;
         Random zufallszahl = new Random();
         RanNum = zufallszahl.nextDouble();
@@ -38,17 +42,17 @@ public class Individuum {
         return Math.round(value * d) / d;
      }
 
-    private static int max(int[] FooArr) {
-        int max = 0;
+    private int max(int[] FooArr) {
+        int maximum = -100;
         for (int i=0;i<FooArr.length;i++) {
-            if (FooArr[i] > max) {
-                max = FooArr[i];
+            if (FooArr[i] > maximum) {
+                maximum = FooArr[i];
             }
         }
-        return max;
+        return maximum;
     }
 
-    public static int[] OneValue(int[] BarArr, int Value){
+    public int[] OneValue(int[] BarArr, int Value){
         int[] OneValueArr = new int[BarArr.length];
         for (int i=0;i<BarArr.length;i++){
             OneValueArr[i] = Value;
@@ -56,7 +60,7 @@ public class Individuum {
         return OneValueArr;
     }
  
-    public static int[] ChangeValue (int[] ArrArr, int OldValue, int NewValue){
+    public int[] ChangeValue (int[] ArrArr, int OldValue, int NewValue){
         int[] NewArrArr = new int[ArrArr.length];
         for (int i=0;i<ArrArr.length;i++){
             if (ArrArr[i] == OldValue){
@@ -66,7 +70,7 @@ public class Individuum {
         return NewArrArr;
     }
 
-    public static int Count (int[] CountArr, int Value){
+    public int Count (int[] CountArr, int Value){
         int CountDoku = 0;
         for (int i=0;i<CountArr.length;i++){
             if (CountArr[i]==Value){
@@ -76,11 +80,22 @@ public class Individuum {
         return CountDoku;
     }
 
+    public int[][] CopyArray (int[][] Arr) {
+        int[][] Copy = new int[Arr.length][Arr[0].length];
+        for (int i = 0; i < Arr.length; i++) {
+            for (int j = 0; j < Arr[0].length; j++) {
+                Copy[i][j] = Arr[i][j];
+            }
+        }
+        return Copy;
+    }
+    
+
 
 
 
     // Methoden
-
+    // Decodierung
     void decodierung(int AnzOp,int AnzMa, int[][] Vorrangmatrix, int[][] Maschinenzeiten){
         
         // VORBEREITUNG
@@ -104,11 +119,19 @@ public class Individuum {
 
 
 
+        // Liste der Maschinen erstellen
+        Machines = new ArrayList<Machine>(AnzMa);
+        for (int i=0;i<AnzMa;i++) {
+            Machine MachineX = new Machine(i,0);
+            Machines .add(MachineX);
+        }
+
 
 
         // StartzeitenMatrix bestimmen
         int[] AnfangsOp = new int[AnzOp];
-        int[][] VorgängerOp = Vorrangmatrix;
+        int[][] VorgängerOp = CopyArray(Vorrangmatrix);
+
 
         for (int z=0;z<AnzOp;z++){
             if (max(VorgängerZeiten[z])<0.1){
@@ -121,17 +144,26 @@ public class Individuum {
 
             //Startzeiten einer Operation: t = Startzeit des Vorgängers und Prozesszeit des Vorgängers (steht in VorgängerZeiten schon drin)
             for (int z=0;z<AnzOp;z++){
+                int FoundOp = 0;
                 if (AnfangsOp[z] == 1){
-                    int FoundOp = z;
-                    for (int s=0;s<AnzOp;s++){
-                        if (VorgängerZeiten[FoundOp][s] !=0){
-                            StartzeitenMatrix[FoundOp][s] = max(VorgängerZeiten[FoundOp]) + VorgängerZeiten[FoundOp][s];
-                            VorgängerOp[FoundOp][s] = 0; // FoundOp gilt als ausgeführt und ist daher nicht länger Vorgänger der Operation in Spalte s
+                    FoundOp = z;
+                    for (int z2=0;z2<AnzOp;z2++){
+                        if (VorgängerZeiten[z2][FoundOp] !=0){
+                            StartzeitenMatrix[z2][FoundOp] = max(StartzeitenMatrix[FoundOp]) + VorgängerZeiten[z2][FoundOp];
+                            //System.out.println(StartzeitenMatrix[z2][FoundOp]);
                         }
                     }
-                
+
+                for (int z3=0;z3<AnzOp;z3++){
+                    if (VorgängerOp[z3][FoundOp] == 1){
+                        VorgängerOp[z3][FoundOp] = 0; // FoundOp gilt als ausgeführt und ist daher nicht länger Vorgänger der Operation in Zeile s
+                    }
+                    
+                }
+
                 VorgängerOp[FoundOp] = OneValue(VorgängerOp[FoundOp],-1);
                 AnfangsOp[FoundOp] = -1;
+
                 }
             }
 
@@ -153,11 +185,224 @@ public class Individuum {
             OperationsDone = Count(AnfangsOp, -1);
         }
 
+        for (int k=0;k<AnzOp;k++){
+            System.out.print("\n");
+            for (int l=0;l<AnzOp;l++)
+            System.out.print(StartzeitenMatrix[k][l] + " ");
+        }
+
+        //Fertigungszeiten berechnen
+        int[] Fertigungszeiten = new int[AnzOp];
+        for (int z=0;z<AnzOp;z++){
+            Fertigungszeiten[z] = max(StartzeitenMatrix[z]) + ProzesszeitenOp[z];
+        }
+
+
+        int[] A = new int[AnzOp];
+        int[][] V = CopyArray(Vorrangmatrix);
+        int[] B = new int[AnzOp];
+        int OperationStrich;
+        int OperationStrichStrich;
+        int OperationStern;
+
+
+        for (int z=0;z<AnzOp;z++){
+            if (max(Vorrangmatrix[z]) < 0.1)
+                A[z] = 1;
+            else{
+                A[z] = 0; 
+            }
+        }
+        
+
+        // Beginn GT Algorithmus
+        int GTAbbruchbedingung = 0;
+        while (GTAbbruchbedingung < AnzOp){
+            OperationStrich = 0;
+            OperationStrichStrich = 0; 
+            OperationStern = 0;
+
+            // GT - Schritt 2.H1: Ermittlung von O'
+            int FruhsteFertigungszeit = 1000;
+            for (int z=0;z<AnzOp;z++){
+                if (A[z] == 1 && Fertigungszeiten[z]< FruhsteFertigungszeit){
+                     OperationStrich = z;
+                     FruhsteFertigungszeit = Fertigungszeiten[z];
+                }
+            }
+
+            // GT - Schritt 2.H2: Menge B bestimmen
+            // Ermitteln der Resource / Maschine
+            int CurrentMachine = Zuordnung[OperationStrich];
+
+            for (int z=0;z<AnzOp;z++){
+                if (A[z]==1 && Zuordnung[z]==CurrentMachine){
+                    B[z]=1;
+                }
+                else{
+                    B[z] = 0;
+                }
+            }
+            
+            // GT - Schritt 2.H3: Ermittlung von OperationStrichStrich
+            int FruhsteStartzeit = 1000;
+            for (int z=0;z<AnzOp;z++){
+                if (B[z]==1 && max(StartzeitenMatrix[z])<FruhsteStartzeit){
+                    OperationStrichStrich = z;
+                    FruhsteStartzeit = max(StartzeitenMatrix[z]);
+                }
+            }
+
+            // GT - Schritt 2.H4: Operationen außerhalb des Zeitfensters entfernen
+
+            int Belegungszeit = Machines.get(CurrentMachine-1).Belegungszeit;
+            int Startzeit;
+            if (max(StartzeitenMatrix[OperationStrichStrich])<Belegungszeit){
+                Startzeit = Belegungszeit;
+            }
+            else{
+                Startzeit = max(StartzeitenMatrix[OperationStrichStrich]);
+            } 
+            
+            double sigma = 0.5;
+
+            for (int z=0;z<AnzOp;z++){
+                if (B[z]==1){
+
+                    if (max(StartzeitenMatrix[z]) > (Startzeit + sigma * (Fertigungszeiten[OperationStrich] - Startzeit))){
+                        B[z] = 0;
+                    }
+
+                }
+            }
+
+            //GT - Schritt 2.H5: OperationStern ermitteln
+
+            int Permutation = 1000;
+            for (int z=0;z<AnzOp;z++){
+                if (B[z]==1 && Sequenz[z]<Permutation){
+                    Permutation = Sequenz[z];
+                    OperationStern = z;
+                }
+            }
+
+            //OperationStern aus A löschen
+            A[OperationStern] = -1;
+            for (int z=0;z<AnzOp;z++){
+                if (A[z] != -1){
+                    V[z][OperationStern] = 0;
+                }
+            }
+            V[OperationStern] = OneValue(V[OperationStern], -1);
+
+            if (max(StartzeitenMatrix[OperationStern]) < Belegungszeit){
+                StartzeitenOp[OperationStern] = Belegungszeit;
+            }
+            if (max(StartzeitenMatrix[OperationStern]) >= Belegungszeit){
+                StartzeitenOp[OperationStern] = max(StartzeitenMatrix[OperationStern]);
+            }
+
+            EndzeitenOp[OperationStern] = StartzeitenOp[OperationStern] + ProzesszeitenOp[OperationStern];
+
+            Machines.get(CurrentMachine-1).Belegungszeit = EndzeitenOp[OperationStern];
+
+            // GT - Schritt 4: Nachfolger von O* zu A hinzufügen
+
+            for (int z=0;z<AnzOp;z++){
+
+                if (max(V[z]) == 0){
+                    A[z] = 1;
+                }
+                if (max(V[z]) == -1){
+                    A[z] = -1;
+                }
+                if (max(V[z]) == 1){
+                    A[z] = 0;
+                }
+            }
+
+            // GT - Schritt 5: Belegungszeiten aktualisieren
+            for (int z=0;z<AnzOp;z++){
+                if (A[z] == -1 && Zuordnung[z] == CurrentMachine){
+                    StartzeitenMatrix[z][AnzOp] = EndzeitenOp[OperationStern];
+                }
+                else{
+                    StartzeitenMatrix[z][AnzOp] = 0;
+                }
+            }
+
+
+            // 
+            // StartzeitenMatrix bestimmen
+            AnfangsOp = OneValue(AnfangsOp, 0);
+            VorgängerOp = CopyArray(Vorrangmatrix);
+
+            for (int z=0;z<AnzOp;z++){
+                if (max(VorgängerZeiten[z])<0.1){
+                    AnfangsOp[z]=1;
+                }
+            }
+        
+
+            OperationsDone = 0;
+            while (OperationsDone < AnzOp){
+
+                //Startzeiten einer Operation: t = Startzeit des Vorgängers und Prozesszeit des Vorgängers (steht in VorgängerZeiten schon drin)
+                for (int z=0;z<AnzOp;z++){
+                    int FoundOp = 0;
+                    if (AnfangsOp[z] == 1){
+                        FoundOp = z;
+                        for (int z2=0;z2<AnzOp;z2++){
+                            if (VorgängerZeiten[z2][FoundOp] !=0){
+                                StartzeitenMatrix[z2][FoundOp] = max(StartzeitenMatrix[FoundOp]) + VorgängerZeiten[z2][FoundOp];
+                                //System.out.println(StartzeitenMatrix[z2][FoundOp]);
+                            }
+                        }
+
+                    for (int z3=0;z3<AnzOp;z3++){
+                        if (VorgängerOp[z3][FoundOp] == 1){
+                            VorgängerOp[z3][FoundOp] = 0; // FoundOp gilt als ausgeführt und ist daher nicht länger Vorgänger der Operation in Zeile s
+                        }
+                        
+                    }
+
+                    VorgängerOp[FoundOp] = OneValue(VorgängerOp[FoundOp],-1);
+                    AnfangsOp[FoundOp] = -1;
+
+                    }
+                }
+
+                //Anfangsoperationen neu bestimmen
+                for (int z=0;z<AnzOp;z++){
+                    if (max(VorgängerOp[z])==0){
+                        AnfangsOp[z] = 1;
+                    }
+                    if (max(VorgängerOp[z])==-1){
+                        AnfangsOp[z] = -1;
+                    }
+                    if (max(VorgängerOp[z]) == 1){
+                        AnfangsOp[z] = 0;
+                    }
+                }
+
+
+                //Abbruchbedingungen ermitteln
+                OperationsDone = Count(AnfangsOp, -1);
+            }
+
+
+            //Fertigungszeiten berechnen
+            for (int z=0;z<AnzOp;z++){
+                Fertigungszeiten[z] = max(StartzeitenMatrix[z]) + ProzesszeitenOp[z];
+            }
+
+
+            // Abbruchbedingung bestimmen
+            GTAbbruchbedingung = Count(A, -1);
+        }
+
+        
     }
-
-
-
-
 
 
 
@@ -179,7 +424,7 @@ public class Individuum {
     }
 
 
-
+    // Swap-Mutation
     void swapmutation(int N){
 
         for (int i = 0; i<N; i++) {
