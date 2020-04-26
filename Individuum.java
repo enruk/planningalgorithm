@@ -7,6 +7,8 @@ import java.util.List;
 
 public class Individuum {
     int Nummer;
+    int Geburtsgeneration;
+
     int[] Zuordnung;
     int[] Sequenz;
     int[] StartzeitenOp;
@@ -14,8 +16,9 @@ public class Individuum {
     int[] ProzesszeitenOp;
     int[][] VorgängerZeiten;
     int[][] StartzeitenMatrix;
-    int Geburtsgeneration;
+    
     List<Machine> Machines;
+    List<Operationen> Prozess;
 
     //Konstruktor
     Individuum(int Num, int startgen, int AnzOp, int AnzMa){
@@ -97,11 +100,12 @@ public class Individuum {
     // Methoden
     // Decodierung
     void decodierung(int AnzOp,int AnzMa, int[][] Vorrangmatrix, int[][] Maschinenzeiten){
-        
+
+
         // VORBEREITUNG
-        //Maschinenmatrix bestimmen aus Zuordnung und Maschinenzeiten und Maschinenzeit in Matrix der Vorgänger-Prozess-Zeiten eintragen
+        //Prozesszeitenmatrix bestimmen aus Zuordnung und Maschinenzeiten und Maschinenzeit in Matrix der Vorgänger-Prozess-Zeiten eintragen
         for (int z=0;z<AnzOp;z++){
-            int WorkingMachine = Zuordnung[z]-1;
+            int WorkingMachine = Zuordnung[z];
             ProzesszeitenOp[z] = Maschinenzeiten[z][WorkingMachine]; 
         }
     
@@ -124,6 +128,18 @@ public class Individuum {
         for (int i=0;i<AnzMa;i++) {
             Machine MachineX = new Machine(i,0);
             Machines .add(MachineX);
+        }
+
+        Prozess = new ArrayList<Operationen>(AnzOp);
+        for (int i=0;i<AnzOp;i++) {
+            Operationen Ops = new Operationen();
+            Prozess .add(Ops);
+         }
+
+        // Optional: Ist das hier wirklich notwendig?
+        for (int i=0;i<AnzOp;i++) {
+            Prozess.get(i).Prozesszeit = ProzesszeitenOp[i];
+            Prozess.get(i).WorkingMachine = Zuordnung[i];
         }
 
 
@@ -255,7 +271,7 @@ public class Individuum {
 
             // GT - Schritt 2.H4: Operationen außerhalb des Zeitfensters entfernen
 
-            int Belegungszeit = Machines.get(CurrentMachine-1).Belegungszeit;
+            int Belegungszeit = Machines.get(CurrentMachine).Belegungszeit;
             int Startzeit;
             if (max(StartzeitenMatrix[OperationStrichStrich])<Belegungszeit){
                 Startzeit = Belegungszeit;
@@ -304,7 +320,7 @@ public class Individuum {
 
             EndzeitenOp[OperationStern] = StartzeitenOp[OperationStern] + ProzesszeitenOp[OperationStern];
 
-            Machines.get(CurrentMachine-1).Belegungszeit = EndzeitenOp[OperationStern];
+            Machines.get(CurrentMachine).Belegungszeit = EndzeitenOp[OperationStern];
 
             // GT - Schritt 4: Nachfolger von O* zu A hinzufügen
 
@@ -323,11 +339,8 @@ public class Individuum {
 
             // GT - Schritt 5: Belegungszeiten aktualisieren
             for (int z=0;z<AnzOp;z++){
-                if (A[z] == -1 && Zuordnung[z] == CurrentMachine){
+                if (A[z] != -1 && Zuordnung[z] == CurrentMachine){
                     StartzeitenMatrix[z][AnzOp] = EndzeitenOp[OperationStern];
-                }
-                else{
-                    StartzeitenMatrix[z][AnzOp] = 0;
                 }
             }
 
@@ -401,7 +414,25 @@ public class Individuum {
             GTAbbruchbedingung = Count(A, -1);
         }
 
-        
+        for (int i=0;i<AnzOp;i++){
+            Prozess.get(i).Startzeit = StartzeitenOp[i];
+            Prozess.get(i).Endzeit = EndzeitenOp[i];
+        }
+
+        //Machinen mit Infos füttern
+        for (int i=0;i<AnzMa;i++){
+            int AnzBlackOps = Count(Zuordnung, i);
+            int[] PlannedOps = new int[AnzBlackOps];
+            int k = 0;
+            for (int j=0;j<AnzOp;j++){
+                if (Zuordnung[j]==i){
+                    PlannedOps[k] = j;
+                    k++;
+                }
+            }
+            Machines.get(i).PlannedOperations = PlannedOps;
+        }
+
     }
 
 

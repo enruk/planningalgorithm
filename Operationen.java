@@ -8,4 +8,8 @@ public class Operationen {
     int[] Nachfolger;
     int[] Maschinen;
     int[] Bearbeitungszeit;
+    int Startzeit;
+    int Prozesszeit;
+    int Endzeit;
+    int WorkingMachine;
 }

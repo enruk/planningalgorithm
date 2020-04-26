@@ -43,7 +43,7 @@ public class Population {
 
     int gen = 1;
     int p = 1;
-    int AnzMaschinen = 10;
+    int AnzMaschinen = 3;
     
 
     ProcessList ProzessRead = new ProcessList();
@@ -95,7 +95,7 @@ public class Population {
          int[] RandomAllocation = new int [nOp];
         double RandomMachine;
         for (int j=0;j<nOp;j++){
-            RandomMachine = round(Zufallszahl() * (AnzMaschinen-1),0)+1;
+            RandomMachine = round(Zufallszahl() * (AnzMaschinen-1),0);
             int Machine = (int) RandomMachine; 
             RandomAllocation[j] = Machine;
         }
@@ -126,7 +126,9 @@ public class Population {
         Population.get(i).decodierung(nOp,AnzMaschinen,Vorrangmatrix,MaschinenZeiten);
      }
 
-
+     for (int i=0;i<nOp;i++){
+         System.out.println(Population.get(0).StartzeitenOp[i]);
+     }
 
 
 
