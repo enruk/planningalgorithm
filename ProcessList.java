@@ -54,7 +54,7 @@ public class ProcessList {
     // Liste der Operationen erstellen mit Daten aus Excel gefüttert
     void ReadoutExcel(int AnzMa) throws IOException {
 
-        FileInputStream inputStream = new FileInputStream(new File("C:/Users/Henrik/OneDrive/Java Projekte/Prozess1.xls"));
+        FileInputStream inputStream = new FileInputStream(new File("C:/Users/Henrik/OneDrive/JavaProjekte/Prozess1.xls"));
         HSSFWorkbook excelmappe = new HSSFWorkbook(inputStream);
         HSSFSheet tabelle = excelmappe.getSheetAt(0);
 
