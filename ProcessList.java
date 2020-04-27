@@ -2,6 +2,7 @@ package planningalgorithm;
 
 import java.util.List;
 import java.util.ArrayList;
+//import java.util.Arrays;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,8 +18,20 @@ import org.apache.poi.ss.usermodel.Row;
 
 public class ProcessList {
 
-    // bislang leere Klasse mit Hauptmethode ReadoutExcel
+    // Klassenattribute
+    int AnzOp;
+    int[][] Präzedenzmatrix;
+    int[][] Maschinenmatrix;
+    List<Operationen> OperationenListe; 
 
+
+    // Konstruktor
+    ProcessList(){
+        AnzOp = 0;
+    }
+
+
+    
     // Methoden
     
     // find in Zeile
@@ -38,22 +51,25 @@ public class ProcessList {
     }
 
 
-    public List<Operationen> ReadoutExcel() throws IOException {
+    // Liste der Operationen erstellen mit Daten aus Excel gefüttert
+    void ReadoutExcel(int AnzMa) throws IOException {
 
-        FileInputStream inputStream = new FileInputStream(new File("C:/Users/Henrik/OneDrive/Java Projekte/Prozess1.xls"));
+        FileInputStream inputStream = new FileInputStream(new File("C:/Users/Henrik/OneDrive/JavaProjekte/Prozess1.xls"));
         HSSFWorkbook excelmappe = new HSSFWorkbook(inputStream);
         HSSFSheet tabelle = excelmappe.getSheetAt(0);
+
 
         // Spalten mit Operationsattributen suchen
         int Erstezeile = tabelle.getFirstRowNum();
         int ZeileNr = findinRow(Erstezeile,"Nr.",tabelle);
         int ZeileName = findinRow(Erstezeile,"Beschreibung",tabelle);
-        //int ZeileVor = findinRow(Erstezeile,"Vorgänger",tabelle);
+        int ZeileVor = findinRow(Erstezeile,"Vorgänger",tabelle);
+        int ZeileM1 = findinRow(Erstezeile,"Maschine 1",tabelle);
         //int ZeileNach = findinRow(Erstezeile,"Nachfolger",tabelle);
 
 
         // Anzahl der gesamten Operationen suchen
-        int AnzOp=0;
+        //int AnzOp=0;
         Iterator<Row> rowIterator = tabelle.iterator();
 
         while (rowIterator.hasNext()) {
@@ -64,10 +80,11 @@ public class ProcessList {
                 AnzOp = AnzOp + 1;
             }
         }
+        
 
-
-        // Leere Operationen erstellen
-        List<Operationen> OperationenListe = new ArrayList<Operationen>(AnzOp);
+        // Arrayliste entsprechend Anzahl der Operationen erstellen
+        OperationenListe = new ArrayList<Operationen>(AnzOp);
+        //List<Operationen> OperationenListe = new ArrayList<Operationen>(AnzOp);
         for (int i=0;i<AnzOp;i++) {
             Operationen Op = new Operationen();
             OperationenListe .add(Op);
@@ -77,26 +94,89 @@ public class ProcessList {
         Iterator<Row> rowIterator2 = tabelle.iterator();
         Iterator<Operationen>  OpListIterator =  OperationenListe.iterator();
 
+        
         while (rowIterator2.hasNext()) {
-            Row Zeile = rowIterator2.next();
+            Row Zeile = rowIterator2.next();    // Zeile mit RowIterator hochzählen
+
+            
+            // Nummer
+            
             Cell CellNr = Zeile.getCell(ZeileNr);
-            Cell CellName = Zeile.getCell(ZeileName);
+            CellType TypeCellNr = CellNr.getCellTypeEnum();
+            // dat geht alles nur wenn dat auch ne Operation ist mit ner Nummer
+            if (TypeCellNr == CellType.NUMERIC){
+                Operationen CurrentOp = OpListIterator.next();  // Operationen in OperationenListe hochzählen 
+                CurrentOp.Nummer = (int)CellNr.getNumericCellValue();
 
-            CellType cellType = CellNr.getCellTypeEnum();
+                // Name oder Beschreibung
+                Cell CellName = Zeile.getCell(ZeileName);
+                CurrentOp.Operationsname = CellName.toString();
 
-            if (cellType == CellType.NUMERIC){
-                int OpNummer = (int)CellNr.getNumericCellValue();
-                String OpName = CellName.toString();
+                // Vorgänger
+                Cell CellVor = Zeile.getCell(ZeileVor);
+                String OpVor = CellVor.toString();
+                String[] StringVor = OpVor.split(";");
+                int[] VorgängerArray = new int[StringVor.length];
+                for (int i=0;i<StringVor.length;i++){
+                    double VorDouble = Double.parseDouble(StringVor[i]);
+                    VorgängerArray[i] = (int)VorDouble;
+                }
+                CurrentOp.Vorgänger = VorgängerArray;
 
+
+                // Maschinen und Bearbeitungszeit auslesen  
+                CurrentOp.Bearbeitungszeit = new int[AnzMa];
+                CurrentOp.Maschinen = new int[AnzMa];
+
+                int AnzMaschinenOp = 0;
+                for (int MaIterator = 0;MaIterator<AnzMa;MaIterator++){
+                    Cell CellMaschine = Zeile.getCell(ZeileM1+MaIterator);
+                    int ZeitMaschine = (int)CellMaschine.getNumericCellValue();
+                    //int [] BearbeitungsMaschinen;
+                    //int [] Bearbeitungs
+                    if (ZeitMaschine == 0){
+                        CurrentOp.Bearbeitungszeit[MaIterator] = ZeitMaschine;
+                    }
+                    else{
+                        CurrentOp.Bearbeitungszeit[MaIterator] = ZeitMaschine;
+                        CurrentOp.Maschinen[AnzMaschinenOp] = MaIterator;
+                        AnzMaschinenOp++;
+                    }
+
+                }
                 
-                Operationen CurrentOp = OpListIterator.next();
-                CurrentOp.Nummer = OpNummer;
-                CurrentOp.Operationsname = OpName;
             }
+ 
             //Operationeniterator++;
         }
         excelmappe.close();
         System.out.println(OperationenListe.get(6).Operationsname);
-        return (OperationenListe);
+
+
+
+
+        // Präzedenzmatrix aus Operationenliste erstellen
+        Präzedenzmatrix = new int[AnzOp][AnzOp];
+        for (int i=0;i<AnzOp;i++){
+            for (int j=0;j<OperationenListe.get(i).Vorgänger.length;j++){
+            int VorProzess = OperationenListe.get(i).Vorgänger[j];
+                if (VorProzess != 0){
+                Präzedenzmatrix[i][VorProzess-1] = 1;
+                }
+            } 
+        }
+
+
+        // Maschinenmatrix aus OperationenListe 
+        Maschinenmatrix = new int[AnzOp][AnzOp];
+        for (int i=0;i<AnzOp;i++){
+            for (int j=0;j<AnzMa;j++){
+                Maschinenmatrix[i][j] = OperationenListe.get(i).Bearbeitungszeit[j];
+            }
+        }
+
+
     }
+
+ 
 }
