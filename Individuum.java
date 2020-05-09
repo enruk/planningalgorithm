@@ -55,6 +55,24 @@ public class Individuum {
         return maximum;
     }
 
+    public int[] AddOneToArray (int[] Arr, int what){
+        // Case 1: Array is empty
+        if (Arr == null){
+            int[] NewArr = new int[1];
+            NewArr[0] = what;
+            return NewArr;
+        }
+        // Case 2: Array isnt empty
+        else {
+            int[] NewArr = new int[Arr.length + 1];
+            for (int i=0;i<Arr.length;i++){
+                NewArr[i] = Arr[i];
+            }
+            NewArr[Arr.length] = what;
+            return NewArr;
+        }
+    }
+
     public int[] OneValue(int[] BarArr, int Value){
         int[] OneValueArr = new int[BarArr.length];
         for (int i=0;i<BarArr.length;i++){
@@ -100,6 +118,21 @@ public class Individuum {
     // Methoden
     // Decodierung
     void decodierung(int AnzOp,int AnzMa, int[][] Vorrangmatrix, int[][] Maschinenzeiten){
+
+        // Liste der Maschinen erstellen
+        Machines = new ArrayList<Machine>(AnzMa);
+        for (int i=0;i<AnzMa;i++) {
+            Machine MachineX = new Machine(i,0);
+            Machines .add(MachineX);
+        }
+
+        // Liste der Prozesse erstellen
+        Prozess = new ArrayList<Operationen>(AnzOp);
+        for (int i=0;i<AnzOp;i++) {
+            Operationen Ops = new Operationen();
+            Prozess .add(Ops);
+        }
+
 
 
         // VORBEREITUNG
@@ -409,6 +442,10 @@ public class Individuum {
                 Fertigungszeiten[z] = max(StartzeitenMatrix[z]) + ProzesszeitenOp[z];
             }
 
+            //Give the working Machine some Information about the Operation
+            Machines.get(CurrentMachine).PlannedOperations = AddOneToArray(Machines.get(CurrentMachine).PlannedOperations, OperationStern);
+            Machines.get(CurrentMachine).Startzeiten = AddOneToArray(Machines.get(CurrentMachine).Startzeiten, StartzeitenOp[OperationStern]);
+            Machines.get(CurrentMachine).Endzeiten = AddOneToArray(Machines.get(CurrentMachine).Endzeiten, EndzeitenOp[OperationStern]);
 
             // Abbruchbedingung bestimmen
             GTAbbruchbedingung = Count(A, -1);
@@ -417,20 +454,6 @@ public class Individuum {
         for (int i=0;i<AnzOp;i++){
             Prozess.get(i).Startzeit = StartzeitenOp[i];
             Prozess.get(i).Endzeit = EndzeitenOp[i];
-        }
-
-        //Machinen mit Infos füttern
-        for (int i=0;i<AnzMa;i++){
-            int AnzBlackOps = Count(Zuordnung, i);
-            int[] PlannedOps = new int[AnzBlackOps];
-            int k = 0;
-            for (int j=0;j<AnzOp;j++){
-                if (Zuordnung[j]==i){
-                    PlannedOps[k] = j;
-                    k++;
-                }
-            }
-            Machines.get(i).PlannedOperations = PlannedOps;
         }
 
     }

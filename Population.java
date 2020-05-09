@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
+import javafx.application.Application;
+//import javafx.stage.Stage;
+
 //import java.io.File;
 //import java.io.FileInputStream;
 //import java.io.FileNotFoundException;
@@ -31,110 +34,96 @@ public class Population {
         return Math.round(value * d) / d;
     }
 
+
+    public static void GenetischerAlgorithmus (){
+
+    }
+
     public static void main(String[] args) throws IOException {
 
+        // Prozess AUSLESEN
 
+        int gen = 1;
+        int p = 2;
+        int AnzMaschinen = 3;
 
+        ProcessList ProzessRead = new ProcessList();
+        ProzessRead.ReadoutExcel(AnzMaschinen);
 
+        List<Operationen> Prozess = ProzessRead.OperationenListe;
+        int nOp = Prozess.size();
 
+        int[][] Vorrangmatrix = ProzessRead.Präzedenzmatrix;
+        int[][] MaschinenZeiten = ProzessRead.Maschinenmatrix;
 
+        System.out.println(Prozess.get(1).Operationsname);
 
-    //Prozess AUSLESEN
-
-    int gen = 1;
-    int p = 1;
-    int AnzMaschinen = 3;
-    
-
-    ProcessList ProzessRead = new ProcessList();
-    ProzessRead.ReadoutExcel(AnzMaschinen);
-
-    List<Operationen> Prozess = ProzessRead.OperationenListe; 
-    int nOp = Prozess.size();
-
-    int[][] Vorrangmatrix = ProzessRead.Präzedenzmatrix; 
-    int[][] MaschinenZeiten = ProzessRead.Maschinenmatrix;
-
-    
-
-    System.out.println(Prozess.get(1).Operationsname);
-
-    for (int k=0;k<nOp;k++){
-        System.out.print("\n");
-        for (int l=0;l<nOp;l++)
-        System.out.print(Vorrangmatrix[k][l] + " ");
-    }
-    
-    for (int k=0;k<nOp;k++){
-        System.out.print("\n");
-        for (int l=0;l<AnzMaschinen;l++)
-        System.out.print(MaschinenZeiten[k][l] + " ");
-    }
-
-
-
-
-
-
-
-
-    //INITIALISIERUNG
-    // Mehrere Objekte vom Typ Individuum erzeugen und unter einer Liste speichern
-
-
-    // Population erzeugen
-    List<Individuum> Population = new ArrayList<Individuum>(100);
-    for (int i=0;i<100;i++) {
-        Individuum indi = new Individuum(i,gen,nOp,AnzMaschinen);
-        Population .add(indi);
-     }
-
-
-     //Zufällig Zuordnung in alle Individuen befüllen
-     for (int i=0;i<p;i++){
-         int[] RandomAllocation = new int [nOp];
-        double RandomMachine;
-        for (int j=0;j<nOp;j++){
-            RandomMachine = round(Zufallszahl() * (AnzMaschinen-1),0);
-            int Machine = (int) RandomMachine; 
-            RandomAllocation[j] = Machine;
+        for (int k = 0; k < nOp; k++) {
+            System.out.print("\n");
+            for (int l = 0; l < nOp; l++)
+                System.out.print(Vorrangmatrix[k][l] + " ");
         }
-         Population.get(i).Zuordnung = RandomAllocation;
-     }
 
-
-     //Zufällig Sequenz in alle Individuen befüllen
-     int[] PermuSortiert = new int[nOp];
-     for (int j=0;j<nOp;j++){
-        PermuSortiert[j]=j+1;
-     }
-
-     for (int i=0;i<100;i++){
-        int[] RandomSequenz = PermuSortiert;
-        for (int j=0;j<nOp;j++){
-            int randomposition = (int)round(Zufallszahl()*(nOp-1),0);
-            int SaveNum = RandomSequenz[j];
-            RandomSequenz[j] = RandomSequenz[randomposition];
-            RandomSequenz[randomposition] = SaveNum;
+        for (int k = 0; k < nOp; k++) {
+            System.out.print("\n");
+            for (int l = 0; l < AnzMaschinen; l++)
+                System.out.print(MaschinenZeiten[k][l] + " ");
         }
-        Population.get(i).Sequenz = RandomSequenz;
-     }
 
+        // INITIALISIERUNG
+        // Mehrere Objekte vom Typ Individuum erzeugen und unter einer Liste speichern
 
-     // Decodierung der Startpopulation
-     for (int i=0;i<p;i++){
-        Population.get(i).decodierung(nOp,AnzMaschinen,Vorrangmatrix,MaschinenZeiten);
-     }
+        // Population erzeugen
+        List<Individuum> Population = new ArrayList<Individuum>(100);
+        for (int i = 0; i < p; i++) {
+            Individuum indi = new Individuum(i, gen, nOp, AnzMaschinen);
+            Population.add(indi);
+        }
 
-     for (int i=0;i<nOp;i++){
-         System.out.println(Population.get(0).StartzeitenOp[i]);
-     }
+        // Zufällig Zuordnung in alle Individuen befüllen
+        for (int i = 0; i < p; i++) {
+            int[] RandomAllocation = new int[nOp];
+            double RandomMachine;
+            for (int j = 0; j < nOp; j++) {
+                RandomMachine = round(Zufallszahl() * (AnzMaschinen - 1), 0);
+                int Machine = (int) RandomMachine;
+                RandomAllocation[j] = Machine;
+            }
+            Population.get(i).Zuordnung = RandomAllocation;
+        }
 
+        // Zufällig Sequenz in alle Individuen befüllen
+        int[] PermuSortiert = new int[nOp];
+        for (int j = 0; j < nOp; j++) {
+            PermuSortiert[j] = j + 1;
+        }
 
+        for (int i = 0; i < p; i++) {
+            int[] RandomSequenz = PermuSortiert;
+            for (int j = 0; j < nOp; j++) {
+                int randomposition = (int) round(Zufallszahl() * (nOp - 1), 0);
+                int SaveNum = RandomSequenz[j];
+                RandomSequenz[j] = RandomSequenz[randomposition];
+                RandomSequenz[randomposition] = SaveNum;
+            }
+            Population.get(i).Sequenz = RandomSequenz;
+        }
 
+        //Decodierung der Startpopulation
+        for (int i=0;i<p;i++){
+            Population.get(i).decodierung(nOp,AnzMaschinen,Vorrangmatrix,MaschinenZeiten);
+        }
 
-
+        for (int i=0;i<nOp;i++){
+            System.out.println(Population.get(0).StartzeitenOp[i]);
+        }
+        
+        //SchedulingDiagramm Zeitplan = new SchedulingDiagramm();
+        //Zeitplan.PrepSchedule(AnzMaschinen,Population.get(0).Machines);
+        Application.launch(SchedulingDiagramm.class, args);
     
+
+
     // 1-Bit-Mutation ausführen
     //Population.get(66).einbitmutation(nOp);
     //for (int i = 0; i<nOp; i++){
