@@ -8,7 +8,7 @@ public class Machine {
     int[] PlannedOperations;
     int[] Startzeiten;
     int[] Endzeiten;
-    int [] Ganntplan;
+    int[] Ganntplan;
 
 
     Machine(int Num, int BelegteZeit){

@@ -21,6 +21,18 @@ import javafx.application.Application;
 //import org.apache.poi.ss.usermodel.Row;
 
 public class Population {
+    int p;
+    int AnzMaschinen;
+    int[][] Vorrangmatrix;
+    int[][] MaschinenZeiten;
+    List<Operationen> ProzessListe;
+    List<Individuum> Individuen;
+
+    Population(int Populationsize, int AnzMa){
+        p = Populationsize;
+        AnzMaschinen = AnzMa;
+    }
+
 
     public static double Zufallszahl() {
         double RanNum;
@@ -34,29 +46,36 @@ public class Population {
         return Math.round(value * d) / d;
     }
 
-
-    public static void GenetischerAlgorithmus (){
-
+    public int[][] CopyArray (int[][] Arr) {
+        int[][] Copy = new int[Arr.length][Arr[0].length];
+        for (int i = 0; i < Arr.length; i++) {
+            for (int j = 0; j < Arr[0].length; j++) {
+                Copy[i][j] = Arr[i][j];
+            }
+        }
+        return Copy;
     }
 
-    public static void main(String[] args) throws IOException {
 
-        // Prozess AUSLESEN
+    public void GenetischerAlgorithmus (){
 
+        // EXCELDATEI AUSLESEN
         int gen = 1;
-        int p = 2;
-        int AnzMaschinen = 3;
 
         ProcessList ProzessRead = new ProcessList();
-        ProzessRead.ReadoutExcel(AnzMaschinen);
+        try {
+            ProzessRead.ReadoutExcel(AnzMaschinen);
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
 
-        List<Operationen> Prozess = ProzessRead.OperationenListe;
-        int nOp = Prozess.size();
+        ProzessListe = ProzessRead.OperationenListe;
+        int nOp = ProzessListe.size();
 
-        int[][] Vorrangmatrix = ProzessRead.Präzedenzmatrix;
-        int[][] MaschinenZeiten = ProzessRead.Maschinenmatrix;
+        Vorrangmatrix = CopyArray(ProzessRead.Präzedenzmatrix);
+        MaschinenZeiten = CopyArray(ProzessRead.Maschinenmatrix);
 
-        System.out.println(Prozess.get(1).Operationsname);
+        System.out.println(ProzessListe.get(1).Operationsname);
 
         for (int k = 0; k < nOp; k++) {
             System.out.print("\n");
@@ -70,14 +89,15 @@ public class Population {
                 System.out.print(MaschinenZeiten[k][l] + " ");
         }
 
+
+
         // INITIALISIERUNG
-        // Mehrere Objekte vom Typ Individuum erzeugen und unter einer Liste speichern
 
         // Population erzeugen
-        List<Individuum> Population = new ArrayList<Individuum>(100);
+        Individuen = new ArrayList<Individuum>(100);
         for (int i = 0; i < p; i++) {
             Individuum indi = new Individuum(i, gen, nOp, AnzMaschinen);
-            Population.add(indi);
+            Individuen.add(indi);
         }
 
         // Zufällig Zuordnung in alle Individuen befüllen
@@ -89,7 +109,7 @@ public class Population {
                 int Machine = (int) RandomMachine;
                 RandomAllocation[j] = Machine;
             }
-            Population.get(i).Zuordnung = RandomAllocation;
+            Individuen.get(i).Zuordnung = RandomAllocation;
         }
 
         // Zufällig Sequenz in alle Individuen befüllen
@@ -106,46 +126,12 @@ public class Population {
                 RandomSequenz[j] = RandomSequenz[randomposition];
                 RandomSequenz[randomposition] = SaveNum;
             }
-            Population.get(i).Sequenz = RandomSequenz;
+            Individuen.get(i).Sequenz = RandomSequenz;
         }
 
         //Decodierung der Startpopulation
         for (int i=0;i<p;i++){
-            Population.get(i).decodierung(nOp,AnzMaschinen,Vorrangmatrix,MaschinenZeiten);
+            Individuen.get(i).decodierung(nOp,AnzMaschinen,Vorrangmatrix,MaschinenZeiten);
         }
-
-        for (int i=0;i<nOp;i++){
-            System.out.println(Population.get(0).StartzeitenOp[i]);
-        }
-        
-        //SchedulingDiagramm Zeitplan = new SchedulingDiagramm();
-        //Zeitplan.PrepSchedule(AnzMaschinen,Population.get(0).Machines);
-        Application.launch(SchedulingDiagramm.class, args);
-    
-
-
-    // 1-Bit-Mutation ausführen
-    //Population.get(66).einbitmutation(nOp);
-    //for (int i = 0; i<nOp; i++){
-    //    System.out.println(Population.get(0).Zuordnung[i]);
-    //}
-
-    // Sawp-Mutation
-    //opulation.get(34).swapmutation(nOp);
-    //for (int i = 0; i<nOp; i++){
-    //    System.out.println(Population.get(0).Sequenz[i]);
-    //}
-
-
-    
     }   
 }
-
-
-
-//ALT
-
-// Neues Individuum mit Zuordnung und Sequenz
-//Individuum indi1 = new Individuum(1,gen);
-//ndi1.Zuordnung = new int[] {0,1,0,1,1};
-//indi1.Sequenz = new int[] {2,1,4,3,5};
