@@ -12,6 +12,9 @@ import javafx.stage.Stage;
 
 public class gui extends Application {
 
+    static List<Machine> Res;
+    static int AnzMa;
+
     public static int[] AddToArray(int[] Arr, int what, int n) {
         int[] NewArr = new int[Arr.length + n];
         for (int i = 0; i < Arr.length; i++) {
@@ -20,7 +23,6 @@ public class gui extends Application {
         for (int j = Arr.length + 1; j < Arr.length + n; j++) {
             NewArr[j] = what;
         }
-
         return NewArr;
     }
 
@@ -28,32 +30,44 @@ public class gui extends Application {
 
         // Launch der Startgui, um grundlagende Daten einzutragen
         int p = 100;
-        int AnzMa = 3;
+        AnzMa = 3;
 
         Population P = new Population(p, AnzMa);
         P.GenetischerAlgorithmus();
-        List<Machine> Ressourcen = PrepSchedule(P.Individuen.get(0).Machines,AnzMa);
+        Res = P.Individuen.get(0).Machines;
 
         launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) {
-        CategoryAxis xAxis = new CategoryAxis();
-        NumberAxis yAxis = new NumberAxis();
-        BarChart barChart = new BarChart(xAxis, yAxis);
-        barChart.setData(getChartData());
-        barChart.setTitle("A");
+
+        //CategoryAxis yAxis = new CategoryAxis();
+        //yAxis.setCategories(Names);
+        //yAxis.setLabel("Ressource");
+        //NumberAxis xAxis = new NumberAxis();
+        //xAxis.setLabel("Zeit [s]");
+
+        //StackedBarChart <Number,String> schedule = new StackedBarChart<>(xAxis, yAxis);
+        //schedule.setTitle("Zeitplan");
+
+        CategoryAxis yAxis = new CategoryAxis();
+        NumberAxis xAxis = new NumberAxis();
+        StackedBarChart schedule = new StackedBarChart<>(xAxis, yAxis);
+        schedule.setData(getChartData());
+        schedule.setTitle("A");
         primaryStage.setTitle("BarChart example");
 
         StackPane root = new StackPane();
-        root.getChildren().add(barChart);
+        root.getChildren().add(schedule);
         primaryStage.setScene(new Scene(root, 400, 250));
         primaryStage.show();
     }
 
-    public static List<Machine> PrepSchedule(List<Machine> Res, int AnzMa) {
+
+    public static ObservableList<XYChart.Series<Number, String>> getChartData() {
         // Get the maximum amount of operations of all machines
+        
         int MaxOp = 0;
         for (int i = 0; i < AnzMa; i++) {
             int temp = Res.get(i).PlannedOperations.length;
@@ -88,26 +102,26 @@ public class gui extends Application {
                 }
             }
         }
-        return Res;
-    }
-
-    private ObservableList<XYChart.Series<String, Double>> getChartData() {
-
-        double aValue = 17.56;
-        double cValue = 17.06;
-        ObservableList<XYChart.Series<String, Double>> answer = FXCollections.observableArrayList();
-        Series<String, Double> aSeries = new Series<String, Double>();
-        Series<String, Double> cSeries = new Series<String, Double>();
-        aSeries.setName("a");
-        cSeries.setName("C");
         
-        for (int i = 2011; i < 2021; i++) {
-            aSeries.getData().add(new XYChart.Data(Integer.toString(i), aValue));
-            aValue = aValue + Math.random() - .5;
-            cSeries.getData().add(new XYChart.Data(Integer.toString(i), cValue));
-            cValue = cValue + Math.random() - .5;
+
+        // Formatierung des Graphen
+        String[] ResourcenNamen = new String[AnzMa];
+        for (int i=0;i<AnzMa;i++){
+            String Num = String.valueOf(i);
+            String ResName = "Ressource "+ Num;
+            ResourcenNamen[i] = ResName;
         }
-        answer.addAll(aSeries, cSeries);
+
+        ObservableList<String> Names = FXCollections.observableArrayList(ResourcenNamen); 
+
+        ObservableList<XYChart.Series<Number, String>> answer = FXCollections.observableArrayList();
+        for (int i=0;i<MaxOp;i++){
+            Series<Number, String> SeriesX = new Series<Number, String>();
+            for (int j=0;j<AnzMa;j++){
+                SeriesX.getData().add(new XYChart.Data(Res.get(j).Ganntplan[i],ResourcenNamen[j]));
+            }
+            answer.add(SeriesX);
+        }
         return answer;
     }
 }
