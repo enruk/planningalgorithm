@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.jfree.ui.RefineryUtilities;
+
 import javafx.application.Application;
 //import javafx.stage.Stage;
 
@@ -133,5 +135,13 @@ public class Population {
         for (int i=0;i<p;i++){
             Individuen.get(i).decodierung(nOp,AnzMaschinen,Vorrangmatrix,MaschinenZeiten);
         }
+
+        Schedule Zeitplan = new Schedule("Test",AnzMaschinen,Individuen.get(0).Machines);
+        Zeitplan.pack();
+        RefineryUtilities.centerFrameOnScreen(Zeitplan);
+        Zeitplan.setVisible(true);
+
+        //Schedule.main();
+
     }   
 }
