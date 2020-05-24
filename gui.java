@@ -1,6 +1,9 @@
 package planningalgorithm;
 
+
 import java.util.List;
+
+
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -9,6 +12,8 @@ import javafx.scene.chart.*;
 import javafx.scene.chart.XYChart.Series;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+
+
 
 public class gui extends Application {
 
@@ -52,11 +57,14 @@ public class gui extends Application {
         //schedule.setTitle("Zeitplan");
 
         CategoryAxis yAxis = new CategoryAxis();
+        yAxis.setLabel("Ressource");
         NumberAxis xAxis = new NumberAxis();
+        xAxis.setLabel("Zeit [s]");
         StackedBarChart schedule = new StackedBarChart<>(xAxis, yAxis);
         schedule.setData(getChartData());
-        schedule.setTitle("A");
-        primaryStage.setTitle("BarChart example");
+        schedule.setTitle("Bester gefundener Prozess");
+        primaryStage.setTitle("Zeitplan");
+        schedule.setCategoryGap(40);
 
         StackPane root = new StackPane();
         root.getChildren().add(schedule);
@@ -64,6 +72,7 @@ public class gui extends Application {
         primaryStage.show();
     }
 
+    
 
     public static ObservableList<XYChart.Series<Number, String>> getChartData() {
         // Get the maximum amount of operations of all machines
@@ -111,7 +120,7 @@ public class gui extends Application {
             String ResName = "Ressource "+ Num;
             ResourcenNamen[i] = ResName;
         }
-
+        
         ObservableList<String> Names = FXCollections.observableArrayList(ResourcenNamen); 
 
         ObservableList<XYChart.Series<Number, String>> answer = FXCollections.observableArrayList();
