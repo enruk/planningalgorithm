@@ -48,7 +48,7 @@ public class SchedulingDiagramm extends Application {
             }
         }
 
-        //Ablaufppläne der anderen Maschinen mit Nullen auffüllen
+        // Fill sequences of all other machines with zeros
         for (int i=0;i<AnzMaschinen;i++){
             int AnzOps = Ressourcen.get(i).PlannedOperations.length;
             if (AnzOps<MaxOp){

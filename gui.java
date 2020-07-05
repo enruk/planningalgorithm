@@ -1,16 +1,27 @@
 package planningalgorithm;
 
-
+import java.io.File;
 import java.util.List;
-
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.chart.*;
 import javafx.scene.chart.XYChart.Series;
-import javafx.scene.layout.StackPane;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.stage.FileChooser;
+//import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 
@@ -19,6 +30,11 @@ public class gui extends Application {
 
     static List<Machine> Res;
     static int AnzMa;
+
+    String filepath;
+    Scene menu;
+    Scene settings;
+
 
     public static int[] AddToArray(int[] Arr, int what, int n) {
         int[] NewArr = new int[Arr.length + n];
@@ -39,13 +55,183 @@ public class gui extends Application {
 
         Population P = new Population(p, AnzMa);
         P.GenetischerAlgorithmus();
-        Res = P.Individuen.get(0).Machines;
+        //Res = P.Individuen.get(0).Machines;
 
-        launch(args);
+        //launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) {
+
+        primaryStage.setTitle("Genetic Algorithm for FJSSPs");
+
+        //Scene1: Menü
+        BorderPane MainLayout = new BorderPane();
+        MainLayout.setPadding(new Insets(20,20,20,20));
+
+        //TOP
+        VBox VBoxTop = new VBox(20);
+
+        Label TitleTop = new Label("File input");
+        TitleTop.setFont(new Font("Arial", 20));
+        HBox HBoxTop = new HBox(20);
+
+            TextField ProcessInput = new TextField("C:/Users/Henrik/Documents/ExampleProcess.xls");
+            ProcessInput.setMinWidth(500);
+
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select process (.xls only)");
+            Button ButtonChooseProcess = new Button("Search");
+
+            ButtonChooseProcess.setOnAction(e ->{
+                File file = fileChooser.showOpenDialog(primaryStage);
+                filepath = file.getAbsolutePath();
+                ProcessInput.clear();
+                ProcessInput.setText(filepath);
+            });
+            HBoxTop.getChildren().addAll(ButtonChooseProcess,ProcessInput);
+            HBoxTop.setHgrow(ProcessInput, Priority.ALWAYS);
+
+        VBoxTop.getChildren().addAll(TitleTop, HBoxTop);
+        MainLayout.setTop(VBoxTop);
+
+        //CENTER
+        VBox VBoxCenter = new VBox(20);
+        Label TitleCenter = new Label("Eingabe von Prozessgrößen");
+        VBoxCenter.setPadding(new Insets(50, 0, 10, 0));
+
+        HBox In1 = new HBox(20);
+            Label TitleEingabe1 = new Label("Anzahl der Ressourcen");
+            TitleEingabe1.setMinWidth(200);
+            TextField Eingabe1 = new TextField();
+            Eingabe1.setMaxWidth(100);
+            In1.getChildren().addAll(TitleEingabe1,Eingabe1);
+
+        HBox In2 = new HBox(20);
+            Label TitleEingabe2 = new Label("Eingabe 2");
+            TitleEingabe2.setMinWidth(200);
+            TextField Eingabe2 = new TextField();
+            Eingabe2.setMaxWidth(100);
+            In2.getChildren().addAll(TitleEingabe2,Eingabe2);
+        
+        HBox In3 = new HBox(20);
+            Label TitleEingabe3 = new Label("Eingabe 3");
+            TitleEingabe3.setMinWidth(200);
+            TextField Eingabe3 = new TextField();
+            Eingabe3.setMaxWidth(100);
+            In3.getChildren().addAll(TitleEingabe3,Eingabe3);
+
+        HBox In4 = new HBox(20);
+            Label TitleEingabe4 = new Label("Eingabe 4");
+            TitleEingabe4.setMinWidth(200);
+            TextField Eingabe4 = new TextField();
+            Eingabe4.setMaxWidth(100);
+            In4.getChildren().addAll(TitleEingabe4,Eingabe4);
+
+        HBox In5 = new HBox(20);
+            Label TitleEingabe5 = new Label("Eingabe 5");
+            TitleEingabe5.setMinWidth(200);
+            TextField Eingabe5 = new TextField();
+            Eingabe5.setMaxWidth(100);
+            In5.getChildren().addAll(TitleEingabe5,Eingabe5);
+        
+
+        VBoxCenter.getChildren().addAll(TitleCenter,In1,In2,In3,In4,In5);
+        MainLayout.setCenter(VBoxCenter);
+
+        //BOTTOM
+        HBox HBoxBottom = new HBox(20);
+        HBoxBottom.setAlignment(Pos.TOP_RIGHT);
+
+            Button StartGA = new Button("Start");
+            StartGA.setOnAction(e->{
+                String AnzMaStr = Eingabe1.getText();
+                AnzMa = Integer.parseInt(AnzMaStr);
+                
+                Population P = new Population(100,AnzMa);
+                P.GenetischerAlgorithmus();
+            });
+
+            Button ButtonSettings = new Button ("Settings Genetic Algorithm");
+            ButtonSettings.setOnAction(e->primaryStage.setScene(settings));
+
+        HBoxBottom.getChildren().addAll(ButtonSettings,StartGA);
+        MainLayout.setBottom(HBoxBottom);
+        
+        
+        menu = new Scene(MainLayout,1000,600);
+
+
+
+
+        //Settings
+        BorderPane SettingsLayout = new BorderPane();
+        SettingsLayout.setPadding(new Insets(20,20,20,20));
+        
+        //Top
+        Label TitleSettings = new Label("Settings genetic algorithm");
+        SettingsLayout.setTop(TitleSettings);
+        
+        //CENTER
+        VBox VBoxCenterSet = new VBox(20);
+        Label TitleCenterSet = new Label("Eingabe von Prozessgrößen");
+        VBoxCenterSet.setPadding(new Insets(50, 0, 10, 0));
+
+        HBox Set1 = new HBox(20);
+            Label TitleSet1 = new Label("Anzahl der Ressourcen");
+            TitleSet1.setMinWidth(200);
+            TextField Setting1 = new TextField();
+            Setting1.setMaxWidth(100);
+            Set1.getChildren().addAll(TitleSet1,Setting1);
+
+        HBox Set2 = new HBox(20);
+            Label TitleSet2 = new Label("Eingabe 2");
+            TitleSet2.setMinWidth(200);
+            TextField Setting2 = new TextField();
+            Setting2.setMaxWidth(100);
+            Set2.getChildren().addAll(TitleSet2,Setting2);
+        
+        HBox Set3 = new HBox(20);
+            Label TitleSet3 = new Label("Eingabe 3");
+            TitleSet3.setMinWidth(200);
+            TextField Setting3 = new TextField();
+            Setting3.setMaxWidth(100);
+            Set3.getChildren().addAll(TitleSet3,Setting3);
+
+        HBox Set4 = new HBox(20);
+            Label TitleSet4 = new Label("Eingabe 4");
+            TitleSet4.setMinWidth(200);
+            TextField Setting4 = new TextField();
+            Setting4.setMaxWidth(100);
+            Set4.getChildren().addAll(TitleSet4,Setting4);
+
+        HBox Set5 = new HBox(20);
+            Label TitleSet5 = new Label("Eingabe 5");
+            TitleSet5.setMinWidth(200);
+            TextField Setting5 = new TextField();
+            Setting5.setMaxWidth(100);
+            Set5.getChildren().addAll(TitleSet5,Setting5);
+        
+
+        VBoxCenterSet.getChildren().addAll(TitleCenterSet,Set1,Set2,Set3,Set4,Set5);
+        SettingsLayout.setCenter(VBoxCenterSet);
+
+        //BOTTOM
+        HBox HBoxBottom2 = new HBox(20);
+        HBoxBottom2.setAlignment(Pos.TOP_RIGHT);
+
+            Button Backbutton = new Button("Zurück");
+            Backbutton.setOnAction(e->primaryStage.setScene(menu));
+            HBoxBottom2.getChildren().add(Backbutton);
+
+        SettingsLayout.setBottom(HBoxBottom2);
+
+
+        settings = new Scene(SettingsLayout,1000,600);
+
+        primaryStage.setScene(menu);
+        primaryStage.show();
+
 
         //CategoryAxis yAxis = new CategoryAxis();
         //yAxis.setCategories(Names);
@@ -56,20 +242,20 @@ public class gui extends Application {
         //StackedBarChart <Number,String> schedule = new StackedBarChart<>(xAxis, yAxis);
         //schedule.setTitle("Zeitplan");
 
-        CategoryAxis yAxis = new CategoryAxis();
-        yAxis.setLabel("Ressource");
-        NumberAxis xAxis = new NumberAxis();
-        xAxis.setLabel("Zeit [s]");
-        StackedBarChart schedule = new StackedBarChart<>(xAxis, yAxis);
-        schedule.setData(getChartData());
-        schedule.setTitle("Bester gefundener Prozess");
-        primaryStage.setTitle("Zeitplan");
-        schedule.setCategoryGap(40);
+        //CategoryAxis yAxis = new CategoryAxis();
+        //yAxis.setLabel("Ressource");
+        //NumberAxis xAxis = new NumberAxis();
+        //xAxis.setLabel("Zeit [s]");
+        //StackedBarChart schedule = new StackedBarChart<>(xAxis, yAxis);
+        //schedule.setData(getChartData());
+        //schedule.setTitle("Bester gefundener Prozess");
+        //primaryStage.setTitle("Zeitplan");
+        //schedule.setCategoryGap(40);
 
-        StackPane root = new StackPane();
-        root.getChildren().add(schedule);
-        primaryStage.setScene(new Scene(root, 400, 250));
-        primaryStage.show();
+        //StackPane root = new StackPane();
+        //root.getChildren().add(schedule);
+        //primaryStage.setScene(new Scene(root, 400, 250));
+        //primaryStage.show();
     }
 
     
