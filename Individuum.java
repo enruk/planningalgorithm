@@ -11,14 +11,17 @@ public class Individuum {
 
     int[] Zuordnung;
     int[] Sequenz;
-    int[] StartzeitenOp;
-    int[] EndzeitenOp;
-    int[] ProzesszeitenOp;
+    int[] StartzeitenOp; // Unnötig mit Liste Prozess, evtl nur für Funkton wie max einfacher
+    int[] EndzeitenOp; // Unnötig mit Liste Prozess
+    int[] ProzesszeitenOp; // Unnötig mit Liste Prozess
     int[][] VorgängerZeiten;
     int[][] StartzeitenMatrix;
-    
+    float TimeFitness;
+    int SUSRank;
+
     List<Machine> Machines;
     List<Operationen> Prozess;
+
 
     //Konstruktor
     Individuum(int Num, int startgen, int AnzOp, int AnzMa){
@@ -457,7 +460,6 @@ public class Individuum {
         }
 
     }
-
 
 
     // 1-Bit-Mutation

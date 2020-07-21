@@ -31,7 +31,10 @@ public class Population {
     int[][] Vorrangmatrix;
     int[][] MaschinenZeiten;
     List<Operationen> ProzessListe;
-    List<Individuum> Individuen;
+    List<Individuum> Individuen; //Current Population
+    List<Individuum> Parents; //Choosen Parents from Current Population
+    List<Individuum> Children; //New made Individuals
+
 
     Population(int Populationsize, int AnzMa){
         p = Populationsize;
@@ -59,6 +62,26 @@ public class Population {
             }
         }
         return Copy;
+    }
+
+    private int max(int[] FooArr) {
+        int maximum = -100;
+        for (int i=0;i<FooArr.length;i++) {
+            if (FooArr[i] > maximum) {
+                maximum = FooArr[i];
+            }
+        }
+        return maximum;
+    }
+
+    private int min(int[] FooArr){
+        int minimum = 10000;
+        for (int i=0;i<FooArr.length;i++) {
+            if (FooArr[i] < minimum) {
+                minimum = FooArr[i];
+            }
+        }
+        return minimum;
     }
 
 
@@ -139,7 +162,80 @@ public class Population {
             Individuen.get(i).decodierung(nOp,AnzMaschinen,Vorrangmatrix,MaschinenZeiten);
         }
 
+        // Erste Bewertung
+        
+        // Rangbasierte Fitness
+        int nRank = 5; //In GUI rein
+        float HeighestRankFitness = 1.8f; //In GUI rein
 
+        float[] RankedFitness = new float[nRank];
+
+        for (int r=1;r<nRank+1;r++){
+            RankedFitness[r-1] = (2-HeighestRankFitness) + (HeighestRankFitness - (2-HeighestRankFitness))*(r-1)/(nRank-1);
+        }
+
+        int[] FinishingTimes = new int[p];
+        for (int i=0;i<p;i++){
+            FinishingTimes[i] = max(Individuen.get(i).EndzeitenOp);
+        }
+        int MaxFinishingTimes = max(FinishingTimes);
+        int MinFinishingTimes = min(FinishingTimes);
+        
+        int Range = MaxFinishingTimes - MinFinishingTimes;
+        int RangeEachRank = Range / nRank;
+
+        for (int r=1;r<nRank+1;r++){
+            for (int i=0;i<p;i++){
+                if (FinishingTimes[i] <= MaxFinishingTimes - (r-1)*RangeEachRank){
+                    Individuen.get(i).SUSRank = r; //eigentlich jetzt unnötig
+                    Individuen.get(i).TimeFitness = RankedFitness[r-1];
+                }
+            }
+        }
+
+        // GENERATIONENSCHLEIFE
+        // Elternselektion
+        List<Individuum> Parents = new ArrayList<Individuum>(p*2);
+            
+        //SUS Verfahren
+        float SumFitness=0;
+        for (int i=0;i<p;i++){
+            SumFitness =+ Individuen.get(i).TimeFitness;
+        }
+
+        float PointerRange = SumFitness / (2*p);
+        float startPointer = PointerRange * (float)Zufallszahl();
+
+        float[] PointerArray = new float[2*p];
+        for (int i=0;i<2*p;i++){
+            PointerArray[i] = startPointer + (i-1)*PointerRange;
+        }
+
+        float[] Wheel = new float[p+1];
+        Wheel[0] = 0;
+
+        for (int i=1;i<=p;i++){
+            Wheel[i] = Individuen.get(i-1).TimeFitness + Wheel[i-1];
+        }
+
+        //Pointer hochzählen
+        for (int i=0;i<2*p;i++){
+            //Wheel Abschnitte hochzählen
+            for (int j=1;j<=p;j++){
+                if (PointerArray[i] <= Wheel[j] && PointerArray[i] > Wheel[j-1]){
+                    Parents.set(i,Individuen.get(j-1));
+                }
+            }
+        }
+
+        // Rekombination
+        // Mutation
+        // Decodierung
+        // Ersetzungsstrategie
+        // Umweltselektion
+        // Abbsuchbedingung
+        
+        // Ausgabe
         Schedule Zeitplan = new Schedule("Test",AnzMaschinen,Individuen.get(0).Machines);
         Zeitplan.pack();
         RefineryUtilities.centerFrameOnScreen(Zeitplan);

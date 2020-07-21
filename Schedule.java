@@ -66,20 +66,29 @@ public class Schedule extends ApplicationFrame {
         //Get the maximum amount of operations of all machines
         int MaxOp = 0;
         for (int i=0;i<AnzMaschinen;i++){
-            int temp = Ressourcen.get(i).PlannedOperations.length;
-            if (temp>MaxOp){
-                MaxOp = temp;
+            if(Ressourcen.get(i).PlannedOperations != null){
+                int temp = Ressourcen.get(i).PlannedOperations.length;
+                if (temp>MaxOp){
+                    MaxOp = temp;
+                }
             }
         }
 
         // Fill sequences of all other machines with zeros
         for (int i=0;i<AnzMaschinen;i++){
-            int AnzOps = Ressourcen.get(i).PlannedOperations.length;
-            if (AnzOps<MaxOp){
-                int DiffOps = MaxOp - AnzOps;
-                Ressourcen.get(i).Startzeiten = AddToArray(Ressourcen.get(i).Startzeiten, 0, DiffOps);
-                Ressourcen.get(i).Endzeiten = AddToArray(Ressourcen.get(i).Endzeiten, 0, DiffOps);
-                Ressourcen.get(i).PlannedOperations = AddToArray(Ressourcen.get(i).PlannedOperations,0,DiffOps);
+            if (Ressourcen.get(i).PlannedOperations != null){
+                int AnzOps = Ressourcen.get(i).PlannedOperations.length;
+                if (AnzOps<MaxOp){
+                    int DiffOps = MaxOp - AnzOps;
+                    Ressourcen.get(i).Startzeiten = AddToArray(Ressourcen.get(i).Startzeiten, 0, DiffOps);
+                    Ressourcen.get(i).Endzeiten = AddToArray(Ressourcen.get(i).Endzeiten, 0, DiffOps);
+                    Ressourcen.get(i).PlannedOperations = AddToArray(Ressourcen.get(i).PlannedOperations,0,DiffOps);
+                }
+            }
+            else{
+                Ressourcen.get(i).Startzeiten = new int[MaxOp];
+                Ressourcen.get(i).Endzeiten = new int[MaxOp];
+                Ressourcen.get(i).PlannedOperations = new int[MaxOp];
             }
         }
 

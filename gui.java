@@ -30,6 +30,7 @@ public class gui extends Application {
 
     static List<Machine> Res;
     static int AnzMa;
+    static int p;
 
     String filepath;
     Scene menu;
@@ -50,14 +51,14 @@ public class gui extends Application {
     public static void main(String[] args) {
 
         // Launch der Startgui, um grundlagende Daten einzutragen
-        int p = 100;
-        AnzMa = 3;
+        //int p = 100;
+        //AnzMa = 3;
 
-        Population P = new Population(p, AnzMa);
-        P.GenetischerAlgorithmus();
+        //Population P = new Population(p, AnzMa);
+        //P.GenetischerAlgorithmus();
         //Res = P.Individuen.get(0).Machines;
 
-        //launch(args);
+        launch(args);
     }
 
     @Override
@@ -97,39 +98,39 @@ public class gui extends Application {
 
         //CENTER
         VBox VBoxCenter = new VBox(20);
-        Label TitleCenter = new Label("Eingabe von Prozessgrößen");
+        Label TitleCenter = new Label("Input of the process variables");
         VBoxCenter.setPadding(new Insets(50, 0, 10, 0));
 
         HBox In1 = new HBox(20);
-            Label TitleEingabe1 = new Label("Anzahl der Ressourcen");
+            Label TitleEingabe1 = new Label("Number of resources");
             TitleEingabe1.setMinWidth(200);
-            TextField Eingabe1 = new TextField();
+            TextField Eingabe1 = new TextField("3");
             Eingabe1.setMaxWidth(100);
             In1.getChildren().addAll(TitleEingabe1,Eingabe1);
 
         HBox In2 = new HBox(20);
-            Label TitleEingabe2 = new Label("Eingabe 2");
+            Label TitleEingabe2 = new Label("Populationsize");
             TitleEingabe2.setMinWidth(200);
-            TextField Eingabe2 = new TextField();
+            TextField Eingabe2 = new TextField("100");
             Eingabe2.setMaxWidth(100);
             In2.getChildren().addAll(TitleEingabe2,Eingabe2);
         
         HBox In3 = new HBox(20);
-            Label TitleEingabe3 = new Label("Eingabe 3");
+            Label TitleEingabe3 = new Label("Maximum generations");
             TitleEingabe3.setMinWidth(200);
-            TextField Eingabe3 = new TextField();
+            TextField Eingabe3 = new TextField("150");
             Eingabe3.setMaxWidth(100);
             In3.getChildren().addAll(TitleEingabe3,Eingabe3);
 
         HBox In4 = new HBox(20);
-            Label TitleEingabe4 = new Label("Eingabe 4");
+            Label TitleEingabe4 = new Label("Maximum calculation time [min]");
             TitleEingabe4.setMinWidth(200);
-            TextField Eingabe4 = new TextField();
+            TextField Eingabe4 = new TextField("15");
             Eingabe4.setMaxWidth(100);
             In4.getChildren().addAll(TitleEingabe4,Eingabe4);
 
         HBox In5 = new HBox(20);
-            Label TitleEingabe5 = new Label("Eingabe 5");
+            Label TitleEingabe5 = new Label("Input 5");
             TitleEingabe5.setMinWidth(200);
             TextField Eingabe5 = new TextField();
             Eingabe5.setMaxWidth(100);
@@ -145,14 +146,16 @@ public class gui extends Application {
 
             Button StartGA = new Button("Start");
             StartGA.setOnAction(e->{
+                String pSizeStr = Eingabe2.getText();
+                p = Integer.parseInt(pSizeStr);
                 String AnzMaStr = Eingabe1.getText();
                 AnzMa = Integer.parseInt(AnzMaStr);
                 
-                Population P = new Population(100,AnzMa);
+                Population P = new Population(p,AnzMa);
                 P.GenetischerAlgorithmus();
             });
 
-            Button ButtonSettings = new Button ("Settings Genetic Algorithm");
+            Button ButtonSettings = new Button ("Detailed settings Genetic Algorithm");
             ButtonSettings.setOnAction(e->primaryStage.setScene(settings));
 
         HBoxBottom.getChildren().addAll(ButtonSettings,StartGA);
@@ -160,9 +163,6 @@ public class gui extends Application {
         
         
         menu = new Scene(MainLayout,1000,600);
-
-
-
 
         //Settings
         BorderPane SettingsLayout = new BorderPane();
@@ -178,21 +178,21 @@ public class gui extends Application {
         VBoxCenterSet.setPadding(new Insets(50, 0, 10, 0));
 
         HBox Set1 = new HBox(20);
-            Label TitleSet1 = new Label("Anzahl der Ressourcen");
+            Label TitleSet1 = new Label("Mutation probability");
             TitleSet1.setMinWidth(200);
             TextField Setting1 = new TextField();
             Setting1.setMaxWidth(100);
             Set1.getChildren().addAll(TitleSet1,Setting1);
 
         HBox Set2 = new HBox(20);
-            Label TitleSet2 = new Label("Eingabe 2");
+            Label TitleSet2 = new Label("Recombination probability");
             TitleSet2.setMinWidth(200);
             TextField Setting2 = new TextField();
             Setting2.setMaxWidth(100);
             Set2.getChildren().addAll(TitleSet2,Setting2);
         
         HBox Set3 = new HBox(20);
-            Label TitleSet3 = new Label("Eingabe 3");
+            Label TitleSet3 = new Label("");
             TitleSet3.setMinWidth(200);
             TextField Setting3 = new TextField();
             Setting3.setMaxWidth(100);
@@ -215,12 +215,67 @@ public class gui extends Application {
 
         VBoxCenterSet.getChildren().addAll(TitleCenterSet,Set1,Set2,Set3,Set4,Set5);
         SettingsLayout.setCenter(VBoxCenterSet);
+        
+        //RIGHT
+        VBox VBoxRightSet = new VBox(20);
+        Label TitleMutation = new Label("Mutation");
+        TitleMutation.setFont(new Font("Arial",20));
+        VBoxRightSet.setPadding(new Insets(50, 0, 10, 0));
+        
+
+        HBox Set6 = new HBox(20);
+        Label TitleSet6 = new Label("Mutation probability sequence");
+        TitleSet6.setMinWidth(200);
+        TextField Setting6 = new TextField();
+        Setting6.setMaxWidth(100);
+        Set6.getChildren().addAll(TitleSet6,Setting6);
+
+        HBox Set7 = new HBox(20);
+        Label TitleSet7 = new Label("Mutation probability allocation");
+        TitleSet7.setMinWidth(200);
+        TextField Setting7 = new TextField();
+        Setting7.setMaxWidth(100);
+        Set7.getChildren().addAll(TitleSet7,Setting7);
+
+        Label EmptyRow = new Label("");
+
+        Label TitleRecombination = new Label("Recombination");
+        TitleRecombination.setFont(new Font("Arial",20));
+
+        HBox Set8 = new HBox(20);
+        Label TitleSet8 = new Label("Crossover probability sequence");
+        TitleSet8.setMinWidth(200);
+        TextField Setting8 = new TextField();
+        Setting8.setMaxWidth(100);
+        Set8.getChildren().addAll(TitleSet8,Setting8);
+
+
+        HBox Set9 = new HBox(20);
+        Label TitleSet9 = new Label("Mutation probability allocation");
+        TitleSet9.setMinWidth(200);
+        TextField Setting9 = new TextField();
+        Setting9.setMaxWidth(100);
+        Set9.getChildren().addAll(TitleSet9,Setting9);
+
+        Label EmptyRow2 = new Label("");
+
+
+        HBox Set10 = new HBox(20);
+        Label TitleSet10 = new Label("Mutation probability");
+        TitleSet10.setMinWidth(200);
+        TextField Setting10 = new TextField();
+        Setting10.setMaxWidth(100);
+        Set10.getChildren().addAll(TitleSet10,Setting10);
+
+        VBoxRightSet.getChildren().addAll(TitleMutation,Set6,Set7,EmptyRow,TitleRecombination,Set8,Set9,EmptyRow2,Set10);
+        SettingsLayout.setRight(VBoxRightSet);
+
 
         //BOTTOM
         HBox HBoxBottom2 = new HBox(20);
         HBoxBottom2.setAlignment(Pos.TOP_RIGHT);
 
-            Button Backbutton = new Button("Zurück");
+            Button Backbutton = new Button("Back");
             Backbutton.setOnAction(e->primaryStage.setScene(menu));
             HBoxBottom2.getChildren().add(Backbutton);
 
