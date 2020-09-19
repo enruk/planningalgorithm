@@ -2,8 +2,9 @@ package planningalgorithm;
 
 import java.util.Random;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-//import java.util.Arrays;
+
 
 public class Individuum {
     int Nummer;
@@ -18,6 +19,7 @@ public class Individuum {
     int[][] StartzeitenMatrix;
     float TimeFitness;
     int SUSRank;
+    int TournamentWins;
 
     List<Machine> Machines;
     List<Operationen> Prozess;
@@ -27,6 +29,8 @@ public class Individuum {
     Individuum(int Num, int startgen, int AnzOp, int AnzMa){
         Nummer=Num;
         Geburtsgeneration=startgen;
+        Zuordnung = new int[AnzOp];
+        Sequenz = new int[AnzOp];
         StartzeitenOp = new int[AnzOp];
         EndzeitenOp = new int[AnzOp];
         ProzesszeitenOp = new int[AnzOp];
@@ -202,7 +206,6 @@ public class Individuum {
                     for (int z2=0;z2<AnzOp;z2++){
                         if (VorgängerZeiten[z2][FoundOp] !=0){
                             StartzeitenMatrix[z2][FoundOp] = max(StartzeitenMatrix[FoundOp]) + VorgängerZeiten[z2][FoundOp];
-                            //System.out.println(StartzeitenMatrix[z2][FoundOp]);
                         }
                     }
 
@@ -237,11 +240,6 @@ public class Individuum {
             OperationsDone = Count(AnfangsOp, -1);
         }
 
-        for (int k=0;k<AnzOp;k++){
-            System.out.print("\n");
-            for (int l=0;l<AnzOp;l++)
-            System.out.print(StartzeitenMatrix[k][l] + " ");
-        }
 
         //Fertigungszeiten berechnen
         int[] Fertigungszeiten = new int[AnzOp];
@@ -320,11 +318,9 @@ public class Individuum {
 
             for (int z=0;z<AnzOp;z++){
                 if (B[z]==1){
-
                     if (max(StartzeitenMatrix[z]) > (Startzeit + sigma * (Fertigungszeiten[OperationStrich] - Startzeit))){
                         B[z] = 0;
                     }
-
                 }
             }
 
@@ -404,7 +400,6 @@ public class Individuum {
                         for (int z2=0;z2<AnzOp;z2++){
                             if (VorgängerZeiten[z2][FoundOp] !=0){
                                 StartzeitenMatrix[z2][FoundOp] = max(StartzeitenMatrix[FoundOp]) + VorgängerZeiten[z2][FoundOp];
-                                //System.out.println(StartzeitenMatrix[z2][FoundOp]);
                             }
                         }
 
@@ -463,12 +458,11 @@ public class Individuum {
 
 
     // 1-Bit-Mutation
-    void einbitmutation(int N){
+    void einbitmutation(int N, double MutProbability){
         
         for (int i = 0; i<N; i++) {
             double random = Zufallszahl();
-            System.out.println(random);
-            if (random<0.5) {
+            if (random<MutProbability){
                 if (Zuordnung[i]==1){
                     Zuordnung[i]=0;
                 } 
@@ -479,23 +473,63 @@ public class Individuum {
         }
     }
 
+    //Mixed Mutation
+    void mixedmutation(int nOp, double MixMutProbability, int typeCoding){
+
+        double random = Zufallszahl();
+        if(random > MixMutProbability){
+            int sectionStart = (int) round(Zufallszahl()*nOp,0);
+            int sectionEnd = (int) round(Zufallszahl()*nOp,0);
+            while (sectionEnd == sectionStart){
+                sectionEnd = (int) round(Zufallszahl()*nOp,0);
+            }
+            if (sectionEnd < sectionStart){
+                int temp = sectionStart;
+                sectionStart = sectionEnd;
+                sectionEnd = temp;
+            }
+
+            int[] tempArr = new int[sectionEnd-sectionStart];
+            if (typeCoding == 0){
+                System.arraycopy(Zuordnung, sectionStart, tempArr, 0, sectionEnd-sectionStart);
+                List<Integer> tempList = new ArrayList();
+                for (int k=0;k<tempArr.length;k++){
+                    tempList.add(tempArr[k]);
+                }
+                Collections.shuffle(tempList);
+                int[] MixedArr = tempList.stream().mapToInt(i->i).toArray();
+                System.arraycopy(MixedArr, 0, Zuordnung, sectionStart, sectionEnd-sectionStart);
+            }
+            else if (typeCoding == 1){
+                System.arraycopy(Sequenz, sectionStart, tempArr, 0, sectionEnd-sectionStart);
+                List<Integer> tempList = new ArrayList();
+                for (int k=0;k<tempArr.length;k++){
+                    tempList.add(tempArr[k]);
+                }
+                Collections.shuffle(tempList);
+                int[] MixedArr = tempList.stream().mapToInt(i->i).toArray();
+                System.arraycopy(MixedArr, 0, Sequenz, sectionStart, sectionEnd-sectionStart);
+            }
+            else{
+                System.out.println("Wrong Input for Coding Type of Mixed Mutation");
+            }
+        }
+    }
+
 
     // Swap-Mutation
-    void swapmutation(int N){
+    void swapmutation(int N, double MutProbability){
 
         for (int i = 0; i<N; i++) {
             double random = Zufallszahl();
-            System.out.println(random);
             if (random<0.2) {
                 double random2 = round(Zufallszahl()*(N-1),0);
                 int randomposition = (int)random2;
-                System.out.println(randomposition);
                 int saveNumber = Sequenz[randomposition];
                 Sequenz[randomposition] = Sequenz[i];
                 Sequenz[i] = saveNumber;
             }
         }
     }
-
 
 }

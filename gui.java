@@ -14,14 +14,12 @@ import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
-//import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 
@@ -49,15 +47,6 @@ public class gui extends Application {
     }
 
     public static void main(String[] args) {
-
-        // Launch der Startgui, um grundlagende Daten einzutragen
-        //int p = 100;
-        //AnzMa = 3;
-
-        //Population P = new Population(p, AnzMa);
-        //P.GenetischerAlgorithmus();
-        //Res = P.Individuen.get(0).Machines;
-
         launch(args);
     }
 
@@ -287,30 +276,6 @@ public class gui extends Application {
         primaryStage.setScene(menu);
         primaryStage.show();
 
-
-        //CategoryAxis yAxis = new CategoryAxis();
-        //yAxis.setCategories(Names);
-        //yAxis.setLabel("Ressource");
-        //NumberAxis xAxis = new NumberAxis();
-        //xAxis.setLabel("Zeit [s]");
-
-        //StackedBarChart <Number,String> schedule = new StackedBarChart<>(xAxis, yAxis);
-        //schedule.setTitle("Zeitplan");
-
-        //CategoryAxis yAxis = new CategoryAxis();
-        //yAxis.setLabel("Ressource");
-        //NumberAxis xAxis = new NumberAxis();
-        //xAxis.setLabel("Zeit [s]");
-        //StackedBarChart schedule = new StackedBarChart<>(xAxis, yAxis);
-        //schedule.setData(getChartData());
-        //schedule.setTitle("Bester gefundener Prozess");
-        //primaryStage.setTitle("Zeitplan");
-        //schedule.setCategoryGap(40);
-
-        //StackPane root = new StackPane();
-        //root.getChildren().add(schedule);
-        //primaryStage.setScene(new Scene(root, 400, 250));
-        //primaryStage.show();
     }
 
     

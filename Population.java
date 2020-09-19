@@ -4,26 +4,13 @@ import java.util.List;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
-
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
+import java.util.stream.IntStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 import org.jfree.ui.RefineryUtilities;
 
-import javafx.application.Application;
-//import javafx.stage.Stage;
-
-//import java.io.File;
-//import java.io.FileInputStream;
-//import java.io.FileNotFoundException;
-//import java.io.IOException;
-//import java.util.Iterator;
-
-//import org.apache.poi.hssf.usermodel.HSSFSheet;
-//import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-//import org.apache.poi.ss.usermodel.Cell;
-//import org.apache.poi.ss.usermodel.CellType;
-//import org.apache.poi.ss.usermodel.Row;
 
 public class Population {
     int p;
@@ -34,6 +21,7 @@ public class Population {
     List<Individuum> Individuen; //Current Population
     List<Individuum> Parents; //Choosen Parents from Current Population
     List<Individuum> Children; //New made Individuals
+    List<Individuum> Temp;
 
 
     Population(int Populationsize, int AnzMa){
@@ -52,6 +40,14 @@ public class Population {
     public static double round(double value, int decimalPoints) {
         double d = Math.pow(10, decimalPoints);
         return Math.round(value * d) / d;
+    }
+
+    public int[] CopyArr (int[] Arr){
+        int[] Copy = new int[Arr.length];
+        for (int i=0;i<Arr.length;i++){
+            Copy[i] = Arr[i];
+        }
+        return Copy;
     }
 
     public int[][] CopyArray (int[][] Arr) {
@@ -89,6 +85,7 @@ public class Population {
 
         // EXCELDATEI AUSLESEN
         int gen = 1;
+        System.out.println(gen + "");
 
         ProcessList ProzessRead = new ProcessList();
         try {
@@ -102,21 +99,6 @@ public class Population {
 
         Vorrangmatrix = CopyArray(ProzessRead.Präzedenzmatrix);
         MaschinenZeiten = CopyArray(ProzessRead.Maschinenmatrix);
-
-        System.out.println(ProzessListe.get(1).Operationsname);
-
-        for (int k = 0; k < nOp; k++) {
-            System.out.print("\n");
-            for (int l = 0; l < nOp; l++)
-                System.out.print(Vorrangmatrix[k][l] + " ");
-        }
-
-        for (int k = 0; k < nOp; k++) {
-            System.out.print("\n");
-            for (int l = 0; l < AnzMaschinen; l++)
-                System.out.print(MaschinenZeiten[k][l] + " ");
-        }
-
 
 
         // INITIALISIERUNG
@@ -137,7 +119,7 @@ public class Population {
                 int Machine = (int) RandomMachine;
                 RandomAllocation[j] = Machine;
             }
-            Individuen.get(i).Zuordnung = RandomAllocation;
+            Individuen.get(i).Zuordnung = CopyArr(RandomAllocation);
         }
 
         // Zufällig Sequenz in alle Individuen befüllen
@@ -147,14 +129,14 @@ public class Population {
         }
 
         for (int i = 0; i < p; i++) {
-            int[] RandomSequenz = PermuSortiert;
+            int[] RandomSequenz = CopyArr(PermuSortiert);
             for (int j = 0; j < nOp; j++) {
                 int randomposition = (int) round(Zufallszahl() * (nOp - 1), 0);
                 int SaveNum = RandomSequenz[j];
                 RandomSequenz[j] = RandomSequenz[randomposition];
                 RandomSequenz[randomposition] = SaveNum;
             }
-            Individuen.get(i).Sequenz = RandomSequenz;
+            Individuen.get(i).Sequenz = CopyArr(RandomSequenz);
         }
 
         //Decodierung der Startpopulation
@@ -193,55 +175,305 @@ public class Population {
             }
         }
 
-        // GENERATIONENSCHLEIFE
-        // Elternselektion
-        List<Individuum> Parents = new ArrayList<Individuum>(p*2);
-            
-        //SUS Verfahren
-        float SumFitness=0;
-        for (int i=0;i<p;i++){
-            SumFitness =+ Individuen.get(i).TimeFitness;
-        }
-
-        float PointerRange = SumFitness / (2*p);
-        float startPointer = PointerRange * (float)Zufallszahl();
-
-        float[] PointerArray = new float[2*p];
-        for (int i=0;i<2*p;i++){
-            PointerArray[i] = startPointer + (i-1)*PointerRange;
-        }
-
-        float[] Wheel = new float[p+1];
-        Wheel[0] = 0;
-
-        for (int i=1;i<=p;i++){
-            Wheel[i] = Individuen.get(i-1).TimeFitness + Wheel[i-1];
-        }
-
-        //Pointer hochzählen
-        for (int i=0;i<2*p;i++){
-            //Wheel Abschnitte hochzählen
-            for (int j=1;j<=p;j++){
-                if (PointerArray[i] <= Wheel[j] && PointerArray[i] > Wheel[j-1]){
-                    Parents.set(i,Individuen.get(j-1));
-                }
-            }
-        }
-
-        // Rekombination
-        // Mutation
-        // Decodierung
-        // Ersetzungsstrategie
-        // Umweltselektion
-        // Abbsuchbedingung
-        
-        // Ausgabe
+        // Output first Generation
         Schedule Zeitplan = new Schedule("Test",AnzMaschinen,Individuen.get(0).Machines);
         Zeitplan.pack();
         RefineryUtilities.centerFrameOnScreen(Zeitplan);
         Zeitplan.setVisible(true);
 
-        //Schedule.main();
 
-    }   
+        // GENERATIONENSCHLEIFE
+        while (gen < 5){
+
+        
+            // Elternselektion
+            List<Individuum> Parents = new ArrayList<Individuum>(p*2);
+                
+            //SUS Verfahren
+            float SumFitness=0;
+            for (int i=0;i<p;i++){
+                SumFitness = SumFitness + Individuen.get(i).TimeFitness;
+            }
+
+            float PointerRange = SumFitness / (2*p);
+            float startPointer = PointerRange * (float)Zufallszahl();
+
+            float[] PointerArray = new float[2*p];
+            for (int i=0;i<2*p;i++){
+                PointerArray[i] = startPointer + (i)*PointerRange;
+            }
+
+            float[] Wheel = new float[p+1];
+            Wheel[0] = 0;
+
+            for (int i=1;i<=p;i++){
+                Wheel[i] = Individuen.get(i-1).TimeFitness + Wheel[i-1];
+            }
+
+            float TopBorder;
+            float BottomBorder;
+            int DeletedPointers = 0;
+            int foundPointer = 0;
+
+            for (int w=1;w<=p;w++){
+                // Count Wheelsections
+                TopBorder = Wheel[w];
+                BottomBorder = Wheel[w-1];
+                DeletedPointers = DeletedPointers + foundPointer;
+                foundPointer = 0;
+                for (int i=DeletedPointers;i<p*2;i++){
+                    // Count Pointer
+                    // Check if Pointer in Wheelsection
+                    if(PointerArray[i] <= TopBorder && PointerArray[i] > BottomBorder){
+                        foundPointer = foundPointer + 1;
+                        Parents.add(Individuen.get(w-1));
+                    }
+                    if(PointerArray[i] > TopBorder){
+                        break;
+                    }
+                }
+                continue;
+            }
+
+
+            // Pairing
+            int[] PairingSorted = new int[p*2];
+            for (int j = 0; j < p*2; j++) {
+                PairingSorted[j] = j;
+            }
+
+            int[] PairingRandom = new int[p*2];
+            for (int i = 0; i < p*2; i++) {
+                PairingRandom = CopyArr(PairingSorted);
+                for (int j = 0; j < p*2; j++) {
+                    int randomposition = (int) round(Zufallszahl() * (p*2 - 1), 0);
+                    int SaveNum = PairingRandom[j];
+                    PairingRandom[j] = PairingRandom[randomposition];
+                    PairingRandom[randomposition] = SaveNum;
+                }
+            }
+
+            
+            // Rekombination
+            gen++; // New Generation, so count up
+
+            Children = new ArrayList<Individuum>(p);
+            for (int i = 0; i < p; i++) {
+                Individuum indi = new Individuum(i, gen, nOp, AnzMaschinen);
+                Children.add(indi);
+            }
+
+
+            // Uniform Rekombination
+            // N-Punkt-Rekombination
+            int RecN = 2; //in GUI rein
+
+            for (int i=0;i<p;i++){
+
+                // Creating new Arrays
+                int[] Allocation1 = new int[nOp];
+                int[] Allocation2 = new int[nOp];
+                System.arraycopy(Parents.get(PairingRandom[i * 2]).Zuordnung, 0, Allocation1, 0, nOp);
+                System.arraycopy(Parents.get(PairingRandom[i * 2+1]).Zuordnung, 0, Allocation2, 0, nOp);
+
+                int[] Child = new int[nOp];
+
+                
+                // Making the Cuts
+                int[] Cuts = new int[RecN+2];
+                Cuts[0] = 0;
+
+                for (int N=1;N<RecN+1;N++){
+                    Cuts[N] = (int) round(Zufallszahl()*nOp,0);
+                    if (N>1){
+                        for (int j=0;j<N;j++){
+                            while(Cuts[N] == Cuts[j] || Cuts[N]-Cuts[j]==1 || Cuts[N]-Cuts[j]==-1){
+                                Cuts[N] = (int) round(Zufallszahl()*nOp,0);
+                            }
+                        }
+                    }
+                }
+                Cuts[RecN+1] = nOp-1;
+                Arrays.sort(Cuts);
+
+                // Filling the Child
+                for (int N=0;N<RecN+1;N++){
+                    if((N%2)==0){
+                        System.arraycopy(Allocation1, Cuts[N], Child, Cuts[N], Cuts[N+1]-Cuts[N]);
+                        if(N==RecN){
+                            Child[nOp-1] = Allocation1[nOp-1];
+                        }
+                    }
+                    else{
+                        System.arraycopy(Allocation1, Cuts[N], Child, Cuts[N], Cuts[N+1]-Cuts[N]);
+                        if(N==RecN){
+                            Child[nOp-1] = Allocation2[nOp-1];
+                        }
+                    }
+                }
+                System.arraycopy(Child,0,Children.get(i).Zuordnung,0,nOp);
+            }
+
+            // PMX / Kantenrekombination
+            // Ordnungsrekombination
+
+            for (int i=0;i<p;i++){
+                int[] Sequence1 = new int[nOp];
+                int[] Sequence2 = new int[nOp];
+
+                System.arraycopy(Parents.get(PairingRandom[i * 2]).Sequenz, 0, Sequence1, 0, nOp);
+                System.arraycopy(Parents.get(PairingRandom[i * 2+1]).Sequenz, 0, Sequence2, 0, nOp);
+
+
+                // Get one section
+                int sectionStart;
+                int sectionEnd;
+
+                sectionStart = (int) round(Zufallszahl()*nOp,0);
+                sectionEnd = (int) round(Zufallszahl()*nOp,0);
+                while (sectionEnd == sectionStart){
+                    sectionEnd = (int) round(Zufallszahl()*nOp,0);
+                }
+                if (sectionEnd < sectionStart){
+                    int temp = sectionStart;
+                    sectionStart = sectionEnd;
+                    sectionEnd = temp;
+                }
+
+                int[] Child = new int[nOp];
+
+                System.arraycopy(Sequence1, sectionStart, Child, sectionStart, sectionEnd-sectionStart);
+
+                for (int k=0;k<nOp;k++){
+                    int value = Sequence2[k];
+                    boolean result = IntStream.of(Child).anyMatch(x -> x == value);
+                    if (!result){
+                        Child[k] = value;
+                    }
+                }
+                System.arraycopy(Child,0,Children.get(i).Sequenz,0,nOp);
+            }
+
+            // Mutation
+
+            // Childmutation
+            double OneBitMutProbability = 0.2;
+            double MixMutProbability = 0;
+
+            for (int i=0;i<p;i++){
+                Children.get(i).einbitmutation(nOp,OneBitMutProbability);   //Allocation
+                Children.get(i).mixedmutation(nOp, MixMutProbability, 1);   //Sequence
+            }
+
+
+            // Decodierung
+            for (int i=0;i<p;i++){
+                Children.get(i).decodierung(nOp,AnzMaschinen,Vorrangmatrix,MaschinenZeiten);
+            }
+
+            // Ersetzungsstrategie
+            // First Attempt: Take only the 50 best old Individuals
+            Collections.sort(Individuen, new FitnessComparator());
+
+            // Bewertung
+
+            //Bring Parents and Children together
+
+            Temp = new ArrayList<>(p/2+p);
+            for (int i=0;i<p/2;i++){
+                Temp.add(Individuen.get(i));
+            }
+
+            for (int i=0;i<p;i++){
+                Temp.add(Children.get(i));
+            }
+
+            // Rangbasierte Fitness
+            // Frage: Bewertung nur von Kindern und von Kindern und Eltern? 
+            RankedFitness = new float[nRank];
+
+            for (int r=1;r<nRank+1;r++){
+                RankedFitness[r-1] = (2-HeighestRankFitness) + (HeighestRankFitness - (2-HeighestRankFitness))*(r-1)/(nRank-1);
+            }
+
+            FinishingTimes = new int[Temp.size()];
+            for (int i=0;i<Temp.size();i++){
+                FinishingTimes[i] = max(Temp.get(i).EndzeitenOp);
+            }
+            MaxFinishingTimes = max(FinishingTimes);
+            MinFinishingTimes = min(FinishingTimes);
+            
+            Range = MaxFinishingTimes - MinFinishingTimes;
+            RangeEachRank = Range / nRank;
+
+            for (int r=1;r<nRank+1;r++){
+                for (int i=0;i<Temp.size();i++){
+                    if (FinishingTimes[i] <= MaxFinishingTimes - (r-1)*RangeEachRank){
+                        Temp.get(i).SUSRank = r; //eigentlich jetzt unnötig
+                        Temp.get(i).TimeFitness = RankedFitness[r-1];
+                    }
+                }
+            }
+
+
+
+            
+            // Umweltselektion
+            int qTournaments = 3;
+
+            for (int q=0;q<qTournaments;q++){
+                Collections.shuffle(Temp);
+                for (int m=0;m<Temp.size()/2;m++){
+                    if (Temp.get(m*2).TimeFitness>=Temp.get(m*2+1).TimeFitness){
+                        Temp.get(m*2).TournamentWins++;
+                    }
+                    else{
+                        Temp.get(m*2+1).TournamentWins++;
+                    }
+                }
+            }
+
+            // Sorting Temp by Wins in Tournamentselection
+            Collections.sort(Temp, new TournamentWinsComparator());
+            Individuen.clear();
+
+            // Add the best p Individuals to Individuen
+            for (int i=0;i<p;i++){
+                Individuen.add(Temp.get(i));
+            }
+
+
+            // Clean up
+            Parents.clear();
+            Children.clear();
+            Temp.clear();
+
+            //Output Generation
+            System.out.println(gen+"");
+        
+
+        // Abbbruchbedingung
+        }
+        
+        // Ausgabe des Champions
+        Schedule ZeitplanChamp = new Schedule("Test",AnzMaschinen,Individuen.get(0).Machines);
+        ZeitplanChamp.pack();
+        RefineryUtilities.centerFrameOnScreen(ZeitplanChamp);
+        ZeitplanChamp.setVisible(true);
+    }
+
+}
+
+class FitnessComparator implements Comparator<Individuum> {
+    @Override
+    public int compare(Individuum a, Individuum b) {
+        return a.TimeFitness < b.TimeFitness ? 1 : a.TimeFitness == b.TimeFitness ? 0 : -1;
+    }
+}
+
+class TournamentWinsComparator implements Comparator<Individuum> {
+    @Override
+    public int compare(Individuum a, Individuum b) {
+        return a.TournamentWins < b.TournamentWins ? 1 : a.TournamentWins == b.TournamentWins ? 0 : -1;
+    }
 }

@@ -4,36 +4,18 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.awt.Font;
 import java.util.List;
-import java.awt.color.*;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.CategoryTextAnnotation;
-import org.jfree.chart.labels.CategoryItemLabelGenerator;
-import org.jfree.chart.labels.ItemLabelAnchor;
-import org.jfree.chart.labels.ItemLabelPosition;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.StackedBarRenderer;
-import org.jfree.chart.ui.TextAnchor;
 import org.jfree.data.category.CategoryDataset;
-//import org.jfree.chart.plot.CategoryPlot;
-//import org.jfree.chart.plot.PlotOrientation;
-//import org.jfree.chart.renderer.category.CategoryItemRenderer;
-//import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.category.IntervalCategoryDataset;
-import org.jfree.data.gantt.Task;
-import org.jfree.data.gantt.TaskSeries;
-import org.jfree.data.gantt.TaskSeriesCollection;
 import org.jfree.data.general.DatasetUtilities;
-//import org.jfree.data.general.DatasetUtilities;
-import org.jfree.data.time.SimpleTimePeriod;
-import org.jfree.ui.ApplicationFrame;
-//import org.jfree.ui.RefineryUtilities;
 
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
+import org.jfree.ui.ApplicationFrame;
+
 
 
 public class Schedule extends ApplicationFrame {
@@ -179,35 +161,7 @@ public class Schedule extends ApplicationFrame {
             }
         }
 
-        
-
-        //plot.setRenderer(renderer);
         return chart;
     }
 
-
-    //private IntervalCategoryDataset getCategoryDataset(int AnzMa, List<Machine> Res){
-    
-        
-
-    //    return dataset;
-    //}
-
-
-        //JFreeChart chart = ChartFactory.createGanttChart("Schedule", "Machines", "Time", collection, false, false, false);
-        //CategoryPlot plot = chart.getCategoryPlot();
-
-        //CategoryItemRenderer renderer = plot.getRenderer();
-
-        
-
-
-
-    //public void output() {
-
-        //final Schedule demo = new Schedule("Stacked Bar Chart");
-        //demo.pack();
-        //RefineryUtilities.centerFrameOnScreen(demo);
-        //demo.setVisible(true);
-    //}
 }
