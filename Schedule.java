@@ -5,6 +5,12 @@ import java.text.NumberFormat;
 import java.awt.Font;
 import java.util.List;
 
+import java.awt.BorderLayout;
+
+
+import javax.swing.JFrame;
+
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -14,20 +20,35 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.general.DatasetUtilities;
 
-import org.jfree.ui.ApplicationFrame;
 
 
 
-public class Schedule extends ApplicationFrame {
+public class Schedule extends JFrame {
 
-    public Schedule(String titel, int AnzMa, List<Machine> Res) {
-        super(titel);
-      
+    public Schedule(int AnzMa, List<Machine> Res) {
+
         final CategoryDataset dataset = createDataset(AnzMa, Res);
         final JFreeChart chart = createChart(dataset,Res);
         final ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(500, 350));
-        setContentPane(chartPanel);
+
+        JFrame frame = new JFrame("Schedule");
+        frame.setTitle("Schedule");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLayout(new BorderLayout(0, 5));
+
+        frame.add(chartPanel, BorderLayout.CENTER);
+        //chartPanel.setMouseWheelEnabled(true);
+        //chartPanel.setHorizontalAxisTrace(true);
+        //chartPanel.setVerticalAxisTrace(true);
+
+        //JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        //panel.add(createTrace());
+        //panel.add(createDate());
+        //panel.add(createZoom());
+        //frame.add(panel, BorderLayout.SOUTH);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
     
     public int[] AddToArray (int[] Arr, int what, int n){

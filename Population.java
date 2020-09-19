@@ -1,6 +1,7 @@
 package planningalgorithm;
 
 import java.util.List;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
@@ -176,11 +177,20 @@ public class Population {
         }
 
         // Output first Generation
-        Schedule Zeitplan = new Schedule("Test",AnzMaschinen,Individuen.get(0).Machines);
-        Zeitplan.pack();
-        RefineryUtilities.centerFrameOnScreen(Zeitplan);
-        Zeitplan.setVisible(true);
+        //Schedule Zeitplan = new Schedule(AnzMaschinen,Individuen.get(0).Machines);
+        //Zeitplan.pack();
+        //RefineryUtilities.centerFrameOnScreen(Zeitplan);
+        //Zeitplan.setVisible(true);
 
+
+        
+        EventQueue.invokeLater(new Runnable(){
+
+            @Override 
+            public void run(){
+                Schedule iniSchedule = new Schedule(AnzMaschinen,Individuen.get(0).Machines); 
+            }
+        });
 
         // GENERATIONENSCHLEIFE
         while (gen < 5){
@@ -456,10 +466,18 @@ public class Population {
         }
         
         // Ausgabe des Champions
-        Schedule ZeitplanChamp = new Schedule("Test",AnzMaschinen,Individuen.get(0).Machines);
-        ZeitplanChamp.pack();
-        RefineryUtilities.centerFrameOnScreen(ZeitplanChamp);
-        ZeitplanChamp.setVisible(true);
+        //Schedule ZeitplanChamp = new Schedule("Test",AnzMaschinen,Individuen.get(0).Machines);
+        //ZeitplanChamp.pack();
+        //RefineryUtilities.centerFrameOnScreen(ZeitplanChamp);
+        //ZeitplanChamp.setVisible(true);
+
+        EventQueue.invokeLater(new Runnable(){
+
+            @Override 
+            public void run(){
+                Schedule champSchedule = new Schedule(AnzMaschinen,Individuen.get(0).Machines); 
+            }
+        });
     }
 
 }
