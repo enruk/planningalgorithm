@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.List;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -12,6 +14,7 @@ import javafx.scene.Scene;
 import javafx.scene.chart.*;
 import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -26,9 +29,11 @@ import javafx.stage.Stage;
 
 public class gui extends Application {
 
-    static List<Machine> Res;
-    static int AnzMa;
-    static int p;
+    List<Machine> Res;
+    int AnzMa;
+    int p;
+    int maxGen;
+    int currentgen;
 
     String filepath;
     Scene menu;
@@ -55,7 +60,255 @@ public class gui extends Application {
 
         primaryStage.setTitle("Genetic Algorithm for FJSSPs");
 
-        //Scene1: Menü
+        Population P = new Population();
+
+        //SETTINGS
+        BorderPane SettingsLayout = new BorderPane();
+        SettingsLayout.setPadding(new Insets(20,20,20,20));
+        
+        //Top
+        Label TitleSettings = new Label("Settings genetic algorithm");
+        TitleSettings.setFont(new Font("Arial",32));
+        SettingsLayout.setTop(TitleSettings);
+        
+        
+        //RIGHT
+        VBox VBoxRightSet = new VBox(20);
+        VBoxRightSet.setPadding(new Insets(50, 0, 10, 0));
+
+        Label TitleSelection = new Label("Selection");
+        TitleSelection.setFont(new Font("Arial",20));
+
+
+        HBox SetQTour = new HBox(20);
+            Label TitleSetQTour = new Label("Q - Tournaments");
+            TitleSetQTour.setMinWidth(200);
+            TextField QTour = new TextField("3");
+            QTour.setMaxWidth(100);
+            SetQTour.getChildren().addAll(TitleSetQTour,QTour);
+        
+        HBox SetSelReplace = new HBox(20);
+            Label TitleSetSelReplace = new Label("Parents for selection[%]");
+            TitleSetSelReplace.setMinWidth(200);
+            TextField SelReplace = new TextField("50");
+            SelReplace.setMaxWidth(100);
+            SetSelReplace.getChildren().addAll(TitleSetSelReplace,SelReplace);
+
+
+
+        Label TitleFitness = new Label("Fitness");
+        TitleFitness.setFont(new Font("Arial",20));
+        
+        HBox SetRanks = new HBox(20);
+            Label TitleSetRanks = new Label("Number of Ranks");
+            TitleSetRanks.setMinWidth(200);
+            TextField Ranks = new TextField("5");
+            Ranks.setMaxWidth(100);
+            SetRanks.getChildren().addAll(TitleSetRanks,Ranks);
+
+        HBox SetRankedFit = new HBox(20);
+            Label TitleSetRankedFit = new Label("Ranked Fitness for heighest Rank");
+            TitleSetRankedFit.setMinWidth(200);
+            TextField RankedFit = new TextField("1.8");
+            RankedFit.setMaxWidth(100);
+            SetRankedFit.getChildren().addAll(TitleSetRankedFit,RankedFit);
+
+        HBox Set5 = new HBox(20);
+            Label TitleSet5 = new Label("Eingabe 5");
+            TitleSet5.setMinWidth(200);
+            TextField Setting5 = new TextField();
+            Setting5.setMaxWidth(100);
+            Set5.getChildren().addAll(TitleSet5,Setting5);
+        
+
+        Label EmptyRow4 = new Label("");
+
+        VBoxRightSet.getChildren().addAll(TitleSelection,SetQTour,SetSelReplace,EmptyRow4,TitleFitness,SetRanks,SetRankedFit);
+        SettingsLayout.setRight(VBoxRightSet);
+        
+
+
+        //CENTER
+        VBox VBoxCenterSet = new VBox(20);
+        VBoxCenterSet.setPadding(new Insets(50, 0, 10, 0));
+
+        Label TitleMutationAllo = new Label("Mutation Allocation");
+        TitleMutationAllo.setFont(new Font("Arial",20));
+        
+        
+        HBox CheckMut1 = new HBox(20);
+            Label TitleCheck1 = new Label("Mutation Type");
+            TitleCheck1.setMinWidth(200);
+            CheckBox mutBoxAlloBit = new CheckBox();
+            mutBoxAlloBit.setText("One-Bit-Mutation");
+            mutBoxAlloBit.setSelected(true);
+            CheckBox mutBoxAlloSwap = new CheckBox();
+            mutBoxAlloSwap.setText("Swap-Mutation");
+            mutBoxAlloSwap.setSelected(false);
+            CheckMut1.getChildren().addAll(TitleCheck1,mutBoxAlloBit,mutBoxAlloSwap);
+
+            mutBoxAlloBit.selectedProperty().addListener(new ChangeListener<Boolean>(){
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                    mutBoxAlloSwap.setSelected(oldValue);
+                }
+            });
+
+            mutBoxAlloSwap.selectedProperty().addListener(new ChangeListener<Boolean>(){
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                    mutBoxAlloBit.setSelected(oldValue);
+                }
+            });
+
+
+        HBox SetMutAllo = new HBox(20);
+            Label TitleSetMutAllo = new Label("Mutation probability allocation:");
+            TitleSetMutAllo.setMinWidth(200);
+            TextField MutAlloProb = new TextField("0.2");
+            MutAlloProb.setMaxWidth(100);
+            SetMutAllo.getChildren().addAll(TitleSetMutAllo,MutAlloProb);
+
+
+        Label TitleMutationSeq = new Label("Mutation Sequence");
+        TitleMutationSeq.setFont(new Font("Arial",20));
+
+        HBox CheckMut2 = new HBox(20);
+            Label TitleCheckMut2 = new Label("Mutation Type");
+            TitleCheckMut2.setMinWidth(200);
+            CheckBox mutBoxSeqMix = new CheckBox();
+            mutBoxSeqMix.setText("Mixed - Mutation");
+            mutBoxSeqMix.setSelected(true);
+            CheckBox mutBoxSeqSwap = new CheckBox();
+            mutBoxSeqSwap.setText("Swap - Mutation");
+            mutBoxSeqSwap.setSelected(false);
+            CheckMut2.getChildren().addAll(TitleCheckMut2,mutBoxSeqMix,mutBoxSeqSwap);
+
+            mutBoxSeqMix.selectedProperty().addListener(new ChangeListener<Boolean>(){
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                    mutBoxSeqSwap.setSelected(oldValue);
+                }
+            });
+
+            mutBoxSeqSwap.selectedProperty().addListener(new ChangeListener<Boolean>(){
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                    mutBoxSeqMix.setSelected(oldValue);
+                }
+            });
+
+
+        HBox SetMutSeq = new HBox(20);
+            Label TitleSetMutSeq = new Label("Mutation probability sequence:");
+            TitleSetMutSeq.setMinWidth(200);
+            TextField MutSeqProb = new TextField("0.2");
+            MutSeqProb.setMaxWidth(100);
+            SetMutSeq.getChildren().addAll(TitleSetMutSeq,MutSeqProb);
+
+        Label TitleRecombinationAllo = new Label("Recombination Allocation");
+        TitleRecombinationAllo.setFont(new Font("Arial",20));
+
+        HBox CheckRec1 = new HBox(20);
+            Label TitleCheckRec1 = new Label("Recombination Type");
+            TitleCheckRec1.setMinWidth(200);
+            CheckBox recBoxAlloNPoint = new CheckBox();
+            recBoxAlloNPoint.setText("N - Point - Recombination");
+            recBoxAlloNPoint.setSelected(true);
+            CheckBox recBoxAlloUnif = new CheckBox();
+            recBoxAlloUnif.setText("Uniform - Recombination");
+            recBoxAlloUnif.setSelected(false);
+            CheckRec1.getChildren().addAll(TitleCheckRec1,recBoxAlloNPoint,recBoxAlloUnif);
+
+            recBoxAlloNPoint.selectedProperty().addListener(new ChangeListener<Boolean>(){
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                    recBoxAlloUnif.setSelected(oldValue);
+                }
+            });
+
+            recBoxAlloUnif.selectedProperty().addListener(new ChangeListener<Boolean>(){
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                    recBoxAlloNPoint.setSelected(oldValue);
+                }
+            });
+
+        HBox SetRecAllo = new HBox(20);
+            Label TitleSetRecAllo = new Label("Crossover probability allocation:");
+            TitleSetRecAllo.setMinWidth(200);
+            TextField RecAlloProb = new TextField("1.0");
+            RecAlloProb.setMaxWidth(100);
+            SetRecAllo.getChildren().addAll(TitleSetRecAllo,RecAlloProb);
+
+
+        HBox RecN = new HBox(20);
+            Label TitleSetRecN = new Label("N (N-Point-Crossover):");
+            TitleSetRecN.setMinWidth(200);
+            TextField SetRecN = new TextField("2");
+            SetRecN.setMaxWidth(100);
+            RecN.getChildren().addAll(TitleSetRecN,SetRecN);
+
+
+        Label TitleRecombinationSeq = new Label("Recombination Sequence");
+        TitleRecombinationSeq.setFont(new Font("Arial",20));
+
+        HBox CheckRec2 = new HBox(20);
+            Label TitleCheckRec2 = new Label("Recombination Type");
+            TitleCheckRec2.setMinWidth(200);
+            CheckBox recBoxSeqOrder = new CheckBox();
+            recBoxSeqOrder.setText("Order - Recombination");
+            recBoxSeqOrder.setSelected(true);
+            CheckBox recBoxSeqPMX = new CheckBox();
+            recBoxSeqPMX.setText("PMX - Recombination");
+            recBoxSeqPMX.setSelected(false);
+            CheckRec2.getChildren().addAll(TitleCheckRec2,recBoxSeqOrder,recBoxSeqPMX);
+
+            recBoxSeqOrder.selectedProperty().addListener(new ChangeListener<Boolean>(){
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                    recBoxSeqPMX.setSelected(oldValue);
+                }
+            });
+
+            recBoxSeqPMX.selectedProperty().addListener(new ChangeListener<Boolean>(){
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                    recBoxSeqOrder.setSelected(oldValue);
+                }
+            });
+
+
+        HBox SetRecSeq = new HBox(20);
+            Label TitleSetRecSeq = new Label("Crossover probability Sequence:");
+            TitleSetRecSeq.setMinWidth(200);
+            TextField RecSeqProb = new TextField("1.0");
+            RecSeqProb.setMaxWidth(100);
+            SetRecSeq.getChildren().addAll(TitleSetRecSeq,RecSeqProb);
+
+
+        VBoxCenterSet.getChildren().addAll(TitleMutationAllo,CheckMut1,SetMutAllo,TitleMutationSeq,CheckMut2,SetMutSeq,TitleRecombinationAllo,CheckRec1,SetRecAllo,RecN,TitleRecombinationSeq,CheckRec2,SetRecSeq);
+        SettingsLayout.setCenter(VBoxCenterSet);
+
+
+        //BOTTOM
+        HBox HBoxBottom2 = new HBox(20);
+        HBoxBottom2.setAlignment(Pos.TOP_RIGHT);
+
+            Button Backbutton = new Button("Back");
+            Backbutton.setOnAction(e->primaryStage.setScene(menu));
+            HBoxBottom2.getChildren().add(Backbutton);
+
+        SettingsLayout.setBottom(HBoxBottom2);
+
+        //SET SCENE
+        settings = new Scene(SettingsLayout,1000,700);
+
+
+
+
+
+        //MENU
         BorderPane MainLayout = new BorderPane();
         MainLayout.setPadding(new Insets(20,20,20,20));
 
@@ -63,7 +316,7 @@ public class gui extends Application {
         VBox VBoxTop = new VBox(20);
 
         Label TitleTop = new Label("File input");
-        TitleTop.setFont(new Font("Arial", 20));
+        TitleTop.setFont(new Font("Arial", 28));
         HBox HBoxTop = new HBox(20);
 
             TextField ProcessInput = new TextField("C:/Users/Henrik/Documents/ExampleProcess.xls");
@@ -88,255 +341,125 @@ public class gui extends Application {
         //CENTER
         VBox VBoxCenter = new VBox(20);
         Label TitleCenter = new Label("Input of the process variables");
+        TitleCenter.setFont(new Font("Arial", 20));
         VBoxCenter.setPadding(new Insets(50, 0, 10, 0));
 
-        HBox In1 = new HBox(20);
-            Label TitleEingabe1 = new Label("Number of resources");
-            TitleEingabe1.setMinWidth(200);
-            TextField Eingabe1 = new TextField("3");
-            Eingabe1.setMaxWidth(100);
-            In1.getChildren().addAll(TitleEingabe1,Eingabe1);
+        HBox NumRes = new HBox(20);
+            Label NumResTitle = new Label("Number of resources");
+            NumResTitle.setMinWidth(200);
+            TextField NumResText = new TextField("3");
+            NumResText.setMaxWidth(100);
+            NumRes.getChildren().addAll(NumResTitle,NumResText);
 
-        HBox In2 = new HBox(20);
-            Label TitleEingabe2 = new Label("Populationsize");
-            TitleEingabe2.setMinWidth(200);
-            TextField Eingabe2 = new TextField("100");
-            Eingabe2.setMaxWidth(100);
-            In2.getChildren().addAll(TitleEingabe2,Eingabe2);
+        HBox PSize = new HBox(20);
+            Label PSizeTitle = new Label("Populationsize");
+            PSizeTitle.setMinWidth(200);
+            TextField PSizeText = new TextField("100");
+            PSizeText.setMaxWidth(100);
+            PSize.getChildren().addAll(PSizeTitle,PSizeText);
         
-        HBox In3 = new HBox(20);
-            Label TitleEingabe3 = new Label("Maximum generations");
-            TitleEingabe3.setMinWidth(200);
-            TextField Eingabe3 = new TextField("150");
-            Eingabe3.setMaxWidth(100);
-            In3.getChildren().addAll(TitleEingabe3,Eingabe3);
+        HBox maxG = new HBox(20);
+            Label maxGTitle = new Label("Maximum generations");
+            maxGTitle.setMinWidth(200);
+            TextField maxGText = new TextField("150");
+            maxGText.setMaxWidth(100);
+            maxG.getChildren().addAll(maxGTitle,maxGText);
 
-        HBox In4 = new HBox(20);
-            Label TitleEingabe4 = new Label("Maximum calculation time [min]");
-            TitleEingabe4.setMinWidth(200);
-            TextField Eingabe4 = new TextField("15");
-            Eingabe4.setMaxWidth(100);
-            In4.getChildren().addAll(TitleEingabe4,Eingabe4);
-
-        HBox In5 = new HBox(20);
-            Label TitleEingabe5 = new Label("Input 5");
-            TitleEingabe5.setMinWidth(200);
-            TextField Eingabe5 = new TextField();
-            Eingabe5.setMaxWidth(100);
-            In5.getChildren().addAll(TitleEingabe5,Eingabe5);
+        HBox maxCalTime = new HBox(20);
+            Label maxCalTimeTitle = new Label("Maximum calculation time [min]");
+            maxCalTimeTitle.setMinWidth(200);
+            TextField maxCalTimeText = new TextField("15");
+            maxCalTimeText.setMaxWidth(100);
+            maxCalTime.getChildren().addAll(maxCalTimeTitle,maxCalTimeText);
         
 
-        VBoxCenter.getChildren().addAll(TitleCenter,In1,In2,In3,In4,In5);
+        VBoxCenter.getChildren().addAll(TitleCenter,NumRes,PSize,maxG,maxCalTime);
         MainLayout.setCenter(VBoxCenter);
 
+
+
+        
         //BOTTOM
         HBox HBoxBottom = new HBox(20);
         HBoxBottom.setAlignment(Pos.TOP_RIGHT);
 
             Button StartGA = new Button("Start");
             StartGA.setOnAction(e->{
-                String pSizeStr = Eingabe2.getText();
+
+                //Read Main
+                String pSizeStr = PSizeText.getText();
                 p = Integer.parseInt(pSizeStr);
-                String AnzMaStr = Eingabe1.getText();
+                String AnzMaStr = NumResText.getText();
                 AnzMa = Integer.parseInt(AnzMaStr);
+                String MaxGenStr = maxGText.getText();
+                maxGen = Integer.parseInt(MaxGenStr);
+
+                //Read Settings
+                SettingsGA DetailedSettings = new SettingsGA();
+
+                //Selection
+                String QTourStr = QTour.getText();
+                DetailedSettings.QTournaments = Integer.parseInt(QTourStr);
+                String SelReplaceStr = SelReplace.getText();
+                DetailedSettings.SelReplacement = Integer.parseInt(SelReplaceStr);
+
+
+                //Fitness
+                String RanksStr = Ranks.getText();
+                DetailedSettings.nRanks = Integer.parseInt(RanksStr);
+                String RankedFitStr = RankedFit.getText();
+                DetailedSettings.RankedFitness = Float.valueOf(RankedFitStr);
+
+
+                //Mutation Allocation
+                DetailedSettings.DoAlloBit =  mutBoxAlloBit.isSelected();
+                DetailedSettings.DoAlloSwap = mutBoxAlloSwap.isSelected();
+                String MutAlloProbStr = MutAlloProb.getText();
+                DetailedSettings.MutAlloProbability = Float.valueOf(MutAlloProbStr);
                 
-                Population P = new Population(p,AnzMa);
-                P.GenetischerAlgorithmus();
+
+                //Mutation Sequence
+                DetailedSettings.DoSeqMix =  mutBoxSeqMix.isSelected();
+                DetailedSettings.DoSeqSwap = mutBoxSeqSwap.isSelected();
+                String MutSeqProbStr = MutSeqProb.getText();
+                DetailedSettings.MutSeqProbability = Float.valueOf(MutSeqProbStr);
+
+
+                //Recombination Allocation
+                DetailedSettings.DoRecNPoint =  recBoxAlloNPoint.isSelected();
+                DetailedSettings.DoRecUnif = recBoxAlloUnif.isSelected();
+                String RecAlloProbStr = RecAlloProb.getText();
+                DetailedSettings.RecAlloProbability = Float.valueOf(RecAlloProbStr);
+
+
+                //Recombination Sequence
+                DetailedSettings.DoRecOrder =  recBoxSeqOrder.isSelected();
+                DetailedSettings.DoRecPMX = recBoxSeqPMX.isSelected();
+                String RecSeqProbStr = RecSeqProb.getText();
+                DetailedSettings.RecSeqProbability = Float.valueOf(RecSeqProbStr);
+
+
+                //Population P = new Population(p,AnzMa);
+                P.GenetischerAlgorithmus(p,AnzMa,maxGen,DetailedSettings);
             });
+
 
             Button ButtonSettings = new Button ("Detailed settings Genetic Algorithm");
             ButtonSettings.setOnAction(e->primaryStage.setScene(settings));
 
-        HBoxBottom.getChildren().addAll(ButtonSettings,StartGA);
+            Label currentGen = new Label("Current Generation");    
+            currentGen.setMinWidth(200);
+            currentGen.textProperty().bind(P.valueGen);
+
+        HBoxBottom.getChildren().addAll(currentGen,ButtonSettings,StartGA);
         MainLayout.setBottom(HBoxBottom);
         
-        
-        menu = new Scene(MainLayout,1000,600);
+        menu = new Scene(MainLayout,1000,500);
 
-        //Settings
-        BorderPane SettingsLayout = new BorderPane();
-        SettingsLayout.setPadding(new Insets(20,20,20,20));
-        
-        //Top
-        Label TitleSettings = new Label("Settings genetic algorithm");
-        SettingsLayout.setTop(TitleSettings);
-        
-        //CENTER
-        VBox VBoxCenterSet = new VBox(20);
-        Label TitleCenterSet = new Label("Eingabe von Prozessgrößen");
-        VBoxCenterSet.setPadding(new Insets(50, 0, 10, 0));
-
-        HBox Set1 = new HBox(20);
-            Label TitleSet1 = new Label("Mutation probability");
-            TitleSet1.setMinWidth(200);
-            TextField Setting1 = new TextField();
-            Setting1.setMaxWidth(100);
-            Set1.getChildren().addAll(TitleSet1,Setting1);
-
-        HBox Set2 = new HBox(20);
-            Label TitleSet2 = new Label("Recombination probability");
-            TitleSet2.setMinWidth(200);
-            TextField Setting2 = new TextField();
-            Setting2.setMaxWidth(100);
-            Set2.getChildren().addAll(TitleSet2,Setting2);
-        
-        HBox Set3 = new HBox(20);
-            Label TitleSet3 = new Label("");
-            TitleSet3.setMinWidth(200);
-            TextField Setting3 = new TextField();
-            Setting3.setMaxWidth(100);
-            Set3.getChildren().addAll(TitleSet3,Setting3);
-
-        HBox Set4 = new HBox(20);
-            Label TitleSet4 = new Label("Eingabe 4");
-            TitleSet4.setMinWidth(200);
-            TextField Setting4 = new TextField();
-            Setting4.setMaxWidth(100);
-            Set4.getChildren().addAll(TitleSet4,Setting4);
-
-        HBox Set5 = new HBox(20);
-            Label TitleSet5 = new Label("Eingabe 5");
-            TitleSet5.setMinWidth(200);
-            TextField Setting5 = new TextField();
-            Setting5.setMaxWidth(100);
-            Set5.getChildren().addAll(TitleSet5,Setting5);
-        
-
-        VBoxCenterSet.getChildren().addAll(TitleCenterSet,Set1,Set2,Set3,Set4,Set5);
-        SettingsLayout.setCenter(VBoxCenterSet);
-        
-        //RIGHT
-        VBox VBoxRightSet = new VBox(20);
-        Label TitleMutation = new Label("Mutation");
-        TitleMutation.setFont(new Font("Arial",20));
-        VBoxRightSet.setPadding(new Insets(50, 0, 10, 0));
-        
-
-        HBox Set6 = new HBox(20);
-        Label TitleSet6 = new Label("Mutation probability sequence");
-        TitleSet6.setMinWidth(200);
-        TextField Setting6 = new TextField();
-        Setting6.setMaxWidth(100);
-        Set6.getChildren().addAll(TitleSet6,Setting6);
-
-        HBox Set7 = new HBox(20);
-        Label TitleSet7 = new Label("Mutation probability allocation");
-        TitleSet7.setMinWidth(200);
-        TextField Setting7 = new TextField();
-        Setting7.setMaxWidth(100);
-        Set7.getChildren().addAll(TitleSet7,Setting7);
-
-        Label EmptyRow = new Label("");
-
-        Label TitleRecombination = new Label("Recombination");
-        TitleRecombination.setFont(new Font("Arial",20));
-
-        HBox Set8 = new HBox(20);
-        Label TitleSet8 = new Label("Crossover probability sequence");
-        TitleSet8.setMinWidth(200);
-        TextField Setting8 = new TextField();
-        Setting8.setMaxWidth(100);
-        Set8.getChildren().addAll(TitleSet8,Setting8);
-
-
-        HBox Set9 = new HBox(20);
-        Label TitleSet9 = new Label("Mutation probability allocation");
-        TitleSet9.setMinWidth(200);
-        TextField Setting9 = new TextField();
-        Setting9.setMaxWidth(100);
-        Set9.getChildren().addAll(TitleSet9,Setting9);
-
-        Label EmptyRow2 = new Label("");
-
-
-        HBox Set10 = new HBox(20);
-        Label TitleSet10 = new Label("Mutation probability");
-        TitleSet10.setMinWidth(200);
-        TextField Setting10 = new TextField();
-        Setting10.setMaxWidth(100);
-        Set10.getChildren().addAll(TitleSet10,Setting10);
-
-        VBoxRightSet.getChildren().addAll(TitleMutation,Set6,Set7,EmptyRow,TitleRecombination,Set8,Set9,EmptyRow2,Set10);
-        SettingsLayout.setRight(VBoxRightSet);
-
-
-        //BOTTOM
-        HBox HBoxBottom2 = new HBox(20);
-        HBoxBottom2.setAlignment(Pos.TOP_RIGHT);
-
-            Button Backbutton = new Button("Back");
-            Backbutton.setOnAction(e->primaryStage.setScene(menu));
-            HBoxBottom2.getChildren().add(Backbutton);
-
-        SettingsLayout.setBottom(HBoxBottom2);
-
-
-        settings = new Scene(SettingsLayout,1000,600);
 
         primaryStage.setScene(menu);
+        primaryStage.setResizable(false);
         primaryStage.show();
 
-    }
-
-    
-
-    public static ObservableList<XYChart.Series<Number, String>> getChartData() {
-        // Get the maximum amount of operations of all machines
-        
-        int MaxOp = 0;
-        for (int i = 0; i < AnzMa; i++) {
-            int temp = Res.get(i).PlannedOperations.length;
-            if (temp > MaxOp) {
-                MaxOp = temp;
-            }
-        }
-
-        // Ablaufppläne der anderen Maschinen mit Nullen auffüllen
-        for (int i = 0; i < AnzMa; i++) {
-            int AnzOps = Res.get(i).PlannedOperations.length;
-            if (AnzOps < MaxOp) {
-                int DiffOps = MaxOp - AnzOps;
-                Res.get(i).Startzeiten = AddToArray(Res.get(i).Startzeiten, 0, DiffOps);
-                Res.get(i).Endzeiten = AddToArray(Res.get(i).Endzeiten, 0, DiffOps);
-            }
-        }
-
-        //Filling Array Ganttplan which is needed to create the XYChart.Series
-        for (int i=0;i<AnzMa;i++){
-            Res.get(i).Ganntplan = new int[2*MaxOp+1];
-            for (int j=1;j<=MaxOp;j++){
-                if(j==1){
-                    Res.get(i).Ganntplan[0] = Res.get(i).Startzeiten[0];
-                    Res.get(i).Ganntplan[1] = Res.get(i).Endzeiten[0] - Res.get(i).Startzeiten[0];
-                }
-                else{
-                    if (Res.get(i).Endzeiten[j-2]<Res.get(i).Startzeiten[j-1]){
-                        Res.get(i).Ganntplan[2*j-2] = Res.get(i).Startzeiten[j-1] - Res.get(i).Endzeiten[j-2];// Pause, Index: 2,4,5,6
-                    }
-                    Res.get(i).Ganntplan[2*j-1] = Res.get(i).Endzeiten[j-1] - Res.get(i).Startzeiten[j-1];  //Prozess: Endzeit, Index: 1,3,5,
-                }
-            }
-        }
-        
-
-        // Formatierung des Graphen
-        String[] ResourcenNamen = new String[AnzMa];
-        for (int i=0;i<AnzMa;i++){
-            String Num = String.valueOf(i);
-            String ResName = "Ressource "+ Num;
-            ResourcenNamen[i] = ResName;
-        }
-        
-        ObservableList<String> Names = FXCollections.observableArrayList(ResourcenNamen); 
-
-        ObservableList<XYChart.Series<Number, String>> answer = FXCollections.observableArrayList();
-        for (int i=0;i<MaxOp;i++){
-            Series<Number, String> SeriesX = new Series<Number, String>();
-            for (int j=0;j<AnzMa;j++){
-                SeriesX.getData().add(new XYChart.Data(Res.get(j).Ganntplan[i],ResourcenNamen[j]));
-            }
-            answer.add(SeriesX);
-        }
-        return answer;
     }
 }

@@ -36,6 +36,20 @@ public class Individuum {
         ProzesszeitenOp = new int[AnzOp];
         VorgängerZeiten = new int[AnzOp][AnzOp];
         StartzeitenMatrix = new int[AnzOp][AnzOp+1];
+
+        // Liste der Maschinen erstellen
+        Machines = new ArrayList<Machine>(AnzMa);
+        for (int i=0;i<AnzMa;i++) {
+            Machine MachineX = new Machine(i,0);
+            Machines .add(MachineX);
+        }
+
+        // Liste der Prozesse erstellen
+        Prozess = new ArrayList<Operationen>(AnzOp);
+        for (int i=0;i<AnzOp;i++) {
+            Operationen Ops = new Operationen();
+            Prozess .add(Ops);
+        }
     }
 
 
@@ -118,29 +132,44 @@ public class Individuum {
         return Copy;
     }
     
+    void correctingAllocation (int AnzMa, int AnzOp, List<Operationen> OperationsList){
 
+
+        // Liste der Maschinen erstellen
+        for (int i=0;i<AnzOp;i++){
+            Prozess.get(i).Maschinen = new int[AnzMa];
+            System.arraycopy(OperationsList.get(i).Maschinen, 0, Prozess.get(i).Maschinen, 0, AnzMa);
+        }
+
+
+        for (int i=0;i<AnzOp;i++){
+            int RequestedMachine = Zuordnung[i];
+            if (Prozess.get(i).Maschinen[RequestedMachine] == 0){
+                // Requested Machine cant do the operation
+                // Find available Machines
+                List<Integer> numbersAvailableMachines = new ArrayList<>(); 
+                for (int j=0;j<AnzMa;j++){
+                    if (Prozess.get(j).Maschinen[j] == 1){
+                        numbersAvailableMachines.add(j);
+                    }
+                }
+                // Pick random Machine
+                double randomMachine =  round((numbersAvailableMachines.size()-1) * Zufallszahl(),0);
+                int newMachine = (int) randomMachine;
+
+                //But new Machine in Allocation
+                Zuordnung[i] = numbersAvailableMachines.get(newMachine);
+            }
+        }
+
+
+    }
 
 
 
     // Methoden
     // Decodierung
     void decodierung(int AnzOp,int AnzMa, int[][] Vorrangmatrix, int[][] Maschinenzeiten){
-
-        // Liste der Maschinen erstellen
-        Machines = new ArrayList<Machine>(AnzMa);
-        for (int i=0;i<AnzMa;i++) {
-            Machine MachineX = new Machine(i,0);
-            Machines .add(MachineX);
-        }
-
-        // Liste der Prozesse erstellen
-        Prozess = new ArrayList<Operationen>(AnzOp);
-        for (int i=0;i<AnzOp;i++) {
-            Operationen Ops = new Operationen();
-            Prozess .add(Ops);
-        }
-
-
 
         // VORBEREITUNG
         //Prozesszeitenmatrix bestimmen aus Zuordnung und Maschinenzeiten und Maschinenzeit in Matrix der Vorgänger-Prozess-Zeiten eintragen
@@ -160,21 +189,6 @@ public class Individuum {
                 }
             }
         }
-
-
-
-        // Liste der Maschinen erstellen
-        Machines = new ArrayList<Machine>(AnzMa);
-        for (int i=0;i<AnzMa;i++) {
-            Machine MachineX = new Machine(i,0);
-            Machines .add(MachineX);
-        }
-
-        Prozess = new ArrayList<Operationen>(AnzOp);
-        for (int i=0;i<AnzOp;i++) {
-            Operationen Ops = new Operationen();
-            Prozess .add(Ops);
-         }
 
         // Optional: Ist das hier wirklich notwendig?
         for (int i=0;i<AnzOp;i++) {
@@ -474,7 +488,7 @@ public class Individuum {
     }
 
     //Mixed Mutation
-    void mixedmutation(int nOp, double MixMutProbability, int typeCoding){
+    void mixedmutation(int nOp, float MixMutProbability, int typeCoding){
 
         double random = Zufallszahl();
         if(random > MixMutProbability){
@@ -518,11 +532,11 @@ public class Individuum {
 
 
     // Swap-Mutation
-    void swapmutation(int N, double MutProbability){
+    void swapmutation(int N, float MutProbability){
 
         for (int i = 0; i<N; i++) {
             double random = Zufallszahl();
-            if (random<0.2) {
+            if (random<MutProbability) {
                 double random2 = round(Zufallszahl()*(N-1),0);
                 int randomposition = (int)random2;
                 int saveNumber = Sequenz[randomposition];

@@ -37,9 +37,6 @@ public class Schedule extends JFrame {
         frame.setLayout(new BorderLayout(0, 5));
 
         frame.add(chartPanel, BorderLayout.CENTER);
-        //chartPanel.setMouseWheelEnabled(true);
-        //chartPanel.setHorizontalAxisTrace(true);
-        //chartPanel.setVerticalAxisTrace(true);
 
         //JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         //panel.add(createTrace());

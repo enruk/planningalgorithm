@@ -12,10 +12,15 @@ import java.util.Comparator;
 
 import org.jfree.ui.RefineryUtilities;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
 
 public class Population {
     int p;
     int AnzMaschinen;
+    int gen;
+    StringProperty valueGen = new SimpleStringProperty();
     int[][] Vorrangmatrix;
     int[][] MaschinenZeiten;
     List<Operationen> ProzessListe;
@@ -23,12 +28,6 @@ public class Population {
     List<Individuum> Parents; //Choosen Parents from Current Population
     List<Individuum> Children; //New made Individuals
     List<Individuum> Temp;
-
-
-    Population(int Populationsize, int AnzMa){
-        p = Populationsize;
-        AnzMaschinen = AnzMa;
-    }
 
 
     public static double Zufallszahl() {
@@ -82,10 +81,10 @@ public class Population {
     }
 
 
-    public void GenetischerAlgorithmus (){
+    public void GenetischerAlgorithmus (int p, int AnzMaschinen, int maxGen, SettingsGA DetailedSettings){
 
         // EXCELDATEI AUSLESEN
-        int gen = 1;
+        gen = 1;
         System.out.println(gen + "");
 
         ProcessList ProzessRead = new ProcessList();
@@ -141,15 +140,17 @@ public class Population {
         }
 
         //Decodierung der Startpopulation
+
         for (int i=0;i<p;i++){
+            Individuen.get(i).correctingAllocation(AnzMaschinen, nOp, ProzessListe);
             Individuen.get(i).decodierung(nOp,AnzMaschinen,Vorrangmatrix,MaschinenZeiten);
         }
 
         // Erste Bewertung
         
         // Rangbasierte Fitness
-        int nRank = 5; //In GUI rein
-        float HeighestRankFitness = 1.8f; //In GUI rein
+        int nRank = DetailedSettings.nRanks;
+        float HeighestRankFitness = DetailedSettings.RankedFitness;
 
         float[] RankedFitness = new float[nRank];
 
@@ -175,14 +176,6 @@ public class Population {
                 }
             }
         }
-
-        // Output first Generation
-        //Schedule Zeitplan = new Schedule(AnzMaschinen,Individuen.get(0).Machines);
-        //Zeitplan.pack();
-        //RefineryUtilities.centerFrameOnScreen(Zeitplan);
-        //Zeitplan.setVisible(true);
-
-
         
         EventQueue.invokeLater(new Runnable(){
 
@@ -193,7 +186,7 @@ public class Population {
         });
 
         // GENERATIONENSCHLEIFE
-        while (gen < 5){
+        while (gen < maxGen){
 
         
             // Elternselektion
@@ -266,6 +259,9 @@ public class Population {
             
             // Rekombination
             gen++; // New Generation, so count up
+            String genStr = String.valueOf(gen);
+            valueGen.set(genStr);
+            
 
             Children = new ArrayList<Individuum>(p);
             for (int i = 0; i < p; i++) {
@@ -275,109 +271,139 @@ public class Population {
 
 
             // Uniform Rekombination
+            // Fehlt noch 
+
             // N-Punkt-Rekombination
-            int RecN = 2; //in GUI rein
+            if (Boolean.TRUE.equals(DetailedSettings.DoRecNPoint)){
 
-            for (int i=0;i<p;i++){
+                int RecN = 2; //Nicht aus GUI, besser berechnen aus nOp
 
-                // Creating new Arrays
-                int[] Allocation1 = new int[nOp];
-                int[] Allocation2 = new int[nOp];
-                System.arraycopy(Parents.get(PairingRandom[i * 2]).Zuordnung, 0, Allocation1, 0, nOp);
-                System.arraycopy(Parents.get(PairingRandom[i * 2+1]).Zuordnung, 0, Allocation2, 0, nOp);
+                for (int i=0;i<p;i++){
 
-                int[] Child = new int[nOp];
+                    // Creating new Arrays
+                    int[] Allocation1 = new int[nOp];
+                    int[] Allocation2 = new int[nOp];
+                    System.arraycopy(Parents.get(PairingRandom[i * 2]).Zuordnung, 0, Allocation1, 0, nOp);
+                    System.arraycopy(Parents.get(PairingRandom[i * 2+1]).Zuordnung, 0, Allocation2, 0, nOp);
 
-                
-                // Making the Cuts
-                int[] Cuts = new int[RecN+2];
-                Cuts[0] = 0;
+                    int[] Child = new int[nOp];
 
-                for (int N=1;N<RecN+1;N++){
-                    Cuts[N] = (int) round(Zufallszahl()*nOp,0);
-                    if (N>1){
-                        for (int j=0;j<N;j++){
-                            while(Cuts[N] == Cuts[j] || Cuts[N]-Cuts[j]==1 || Cuts[N]-Cuts[j]==-1){
-                                Cuts[N] = (int) round(Zufallszahl()*nOp,0);
+                    
+                    // Making the Cuts
+                    int[] Cuts = new int[RecN+2];
+                    Cuts[0] = 0;
+
+                    for (int N=1;N<RecN+1;N++){
+                        Cuts[N] = (int) round(Zufallszahl()*nOp,0);
+                        if (N>1){
+                            for (int j=0;j<N;j++){
+                                while(Cuts[N] == Cuts[j] || Cuts[N]-Cuts[j]==1 || Cuts[N]-Cuts[j]==-1){
+                                    Cuts[N] = (int) round(Zufallszahl()*nOp,0);
+                                }
                             }
                         }
                     }
-                }
-                Cuts[RecN+1] = nOp-1;
-                Arrays.sort(Cuts);
+                    Cuts[RecN+1] = nOp-1;
+                    Arrays.sort(Cuts);
 
-                // Filling the Child
-                for (int N=0;N<RecN+1;N++){
-                    if((N%2)==0){
-                        System.arraycopy(Allocation1, Cuts[N], Child, Cuts[N], Cuts[N+1]-Cuts[N]);
-                        if(N==RecN){
-                            Child[nOp-1] = Allocation1[nOp-1];
+                    // Filling the Child
+                    for (int N=0;N<RecN+1;N++){
+                        if((N%2)==0){
+                            System.arraycopy(Allocation1, Cuts[N], Child, Cuts[N], Cuts[N+1]-Cuts[N]);
+                            if(N==RecN){
+                                Child[nOp-1] = Allocation1[nOp-1];
+                            }
+                        }
+                        else{
+                            System.arraycopy(Allocation1, Cuts[N], Child, Cuts[N], Cuts[N+1]-Cuts[N]);
+                            if(N==RecN){
+                                Child[nOp-1] = Allocation2[nOp-1];
+                            }
                         }
                     }
-                    else{
-                        System.arraycopy(Allocation1, Cuts[N], Child, Cuts[N], Cuts[N+1]-Cuts[N]);
-                        if(N==RecN){
-                            Child[nOp-1] = Allocation2[nOp-1];
-                        }
-                    }
+                    System.arraycopy(Child,0,Children.get(i).Zuordnung,0,nOp);
                 }
-                System.arraycopy(Child,0,Children.get(i).Zuordnung,0,nOp);
             }
+
 
             // PMX / Kantenrekombination
+            // Fehlt noch
+
             // Ordnungsrekombination
+            if (Boolean.TRUE.equals(DetailedSettings.DoRecOrder)){
 
-            for (int i=0;i<p;i++){
-                int[] Sequence1 = new int[nOp];
-                int[] Sequence2 = new int[nOp];
-
-                System.arraycopy(Parents.get(PairingRandom[i * 2]).Sequenz, 0, Sequence1, 0, nOp);
-                System.arraycopy(Parents.get(PairingRandom[i * 2+1]).Sequenz, 0, Sequence2, 0, nOp);
-
-
-                // Get one section
-                int sectionStart;
-                int sectionEnd;
-
-                sectionStart = (int) round(Zufallszahl()*nOp,0);
-                sectionEnd = (int) round(Zufallszahl()*nOp,0);
-                while (sectionEnd == sectionStart){
+                for (int i=0;i<p;i++){
+                    int[] Sequence1 = new int[nOp];
+                    int[] Sequence2 = new int[nOp];
+    
+                    System.arraycopy(Parents.get(PairingRandom[i * 2]).Sequenz, 0, Sequence1, 0, nOp);
+                    System.arraycopy(Parents.get(PairingRandom[i * 2+1]).Sequenz, 0, Sequence2, 0, nOp);
+    
+    
+                    // Get one section
+                    int sectionStart;
+                    int sectionEnd;
+    
+                    sectionStart = (int) round(Zufallszahl()*nOp,0);
                     sectionEnd = (int) round(Zufallszahl()*nOp,0);
-                }
-                if (sectionEnd < sectionStart){
-                    int temp = sectionStart;
-                    sectionStart = sectionEnd;
-                    sectionEnd = temp;
-                }
-
-                int[] Child = new int[nOp];
-
-                System.arraycopy(Sequence1, sectionStart, Child, sectionStart, sectionEnd-sectionStart);
-
-                for (int k=0;k<nOp;k++){
-                    int value = Sequence2[k];
-                    boolean result = IntStream.of(Child).anyMatch(x -> x == value);
-                    if (!result){
-                        Child[k] = value;
+                    while (sectionEnd == sectionStart){
+                        sectionEnd = (int) round(Zufallszahl()*nOp,0);
                     }
+                    if (sectionEnd < sectionStart){
+                        int temp = sectionStart;
+                        sectionStart = sectionEnd;
+                        sectionEnd = temp;
+                    }
+    
+                    int[] Child = new int[nOp];
+    
+                    System.arraycopy(Sequence1, sectionStart, Child, sectionStart, sectionEnd-sectionStart);
+    
+                    for (int k=0;k<nOp;k++){
+                        int value = Sequence2[k];
+                        boolean result = IntStream.of(Child).anyMatch(x -> x == value);
+                        if (!result){
+                            Child[k] = value;
+                        }
+                    }
+                    System.arraycopy(Child,0,Children.get(i).Sequenz,0,nOp);
                 }
-                System.arraycopy(Child,0,Children.get(i).Sequenz,0,nOp);
+
             }
+
+            
 
             // Mutation
 
             // Childmutation
-            double OneBitMutProbability = 0.2;
-            double MixMutProbability = 0;
 
             for (int i=0;i<p;i++){
-                Children.get(i).einbitmutation(nOp,OneBitMutProbability);   //Allocation
-                Children.get(i).mixedmutation(nOp, MixMutProbability, 1);   //Sequence
+
+                //Allocation
+                //One-Bit-Mutation
+                if (Boolean.TRUE.equals(DetailedSettings.DoAlloBit)){
+                    Children.get(i).einbitmutation(nOp,DetailedSettings.MutAlloProbability);
+                }
+
+                //Swap-Mutation - currently missing
+
+
+
+                //Sequence
+
+                //Mixed-Muation
+                if (Boolean.TRUE.equals(DetailedSettings.DoSeqMix)){
+                    Children.get(i).mixedmutation(nOp, DetailedSettings.MutAlloProbability, 1);
+                }
+                //Swap-Mutation - currently missing
+
+
             }
 
 
             // Decodierung
             for (int i=0;i<p;i++){
+                Children.get(i).correctingAllocation(AnzMaschinen, nOp, ProzessListe);
                 Children.get(i).decodierung(nOp,AnzMaschinen,Vorrangmatrix,MaschinenZeiten);
             }
 
@@ -429,9 +455,8 @@ public class Population {
 
             
             // Umweltselektion
-            int qTournaments = 3;
 
-            for (int q=0;q<qTournaments;q++){
+            for (int q=0;q<DetailedSettings.QTournaments;q++){
                 Collections.shuffle(Temp);
                 for (int m=0;m<Temp.size()/2;m++){
                     if (Temp.get(m*2).TimeFitness>=Temp.get(m*2+1).TimeFitness){
