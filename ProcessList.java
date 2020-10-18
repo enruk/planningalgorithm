@@ -128,7 +128,7 @@ public class ProcessList {
                 CurrentOp.Bearbeitungszeit = new int[AnzMa];
                 CurrentOp.Maschinen = new int[AnzMa];
 
-                int AnzMaschinenOp = 0;
+                //int AnzMaschinenOp = 0;
                 for (int MaIterator = 0;MaIterator<AnzMa;MaIterator++){
                     Cell CellMaschine = Zeile.getCell(ZeileM1+MaIterator);
                     int ZeitMaschine = (int)CellMaschine.getNumericCellValue();
@@ -139,8 +139,8 @@ public class ProcessList {
                     }
                     else{
                         CurrentOp.Bearbeitungszeit[MaIterator] = ZeitMaschine;
-                        CurrentOp.Maschinen[AnzMaschinenOp] = MaIterator;
-                        AnzMaschinenOp++;
+                        CurrentOp.Maschinen[MaIterator] = 1;
+                        //AnzMaschinenOp++;
                     }
 
                 }
@@ -150,7 +150,6 @@ public class ProcessList {
             //Operationeniterator++;
         }
         excelmappe.close();
-        System.out.println(OperationenListe.get(6).Operationsname);
 
 
 

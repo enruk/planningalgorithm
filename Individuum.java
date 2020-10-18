@@ -2,8 +2,9 @@ package planningalgorithm;
 
 import java.util.Random;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-//import java.util.Arrays;
+
 
 public class Individuum {
     int Nummer;
@@ -11,24 +12,44 @@ public class Individuum {
 
     int[] Zuordnung;
     int[] Sequenz;
-    int[] StartzeitenOp;
-    int[] EndzeitenOp;
-    int[] ProzesszeitenOp;
+    int[] StartzeitenOp; // Unnötig mit Liste Prozess, evtl nur für Funkton wie max einfacher
+    int[] EndzeitenOp; // Unnötig mit Liste Prozess
+    int[] ProzesszeitenOp; // Unnötig mit Liste Prozess
     int[][] VorgängerZeiten;
     int[][] StartzeitenMatrix;
-    
+    float TimeFitness;
+    int SUSRank;
+    int TournamentWins;
+
     List<Machine> Machines;
     List<Operationen> Prozess;
+
 
     //Konstruktor
     Individuum(int Num, int startgen, int AnzOp, int AnzMa){
         Nummer=Num;
         Geburtsgeneration=startgen;
+        Zuordnung = new int[AnzOp];
+        Sequenz = new int[AnzOp];
         StartzeitenOp = new int[AnzOp];
         EndzeitenOp = new int[AnzOp];
         ProzesszeitenOp = new int[AnzOp];
         VorgängerZeiten = new int[AnzOp][AnzOp];
         StartzeitenMatrix = new int[AnzOp][AnzOp+1];
+
+        // Liste der Maschinen erstellen
+        Machines = new ArrayList<Machine>(AnzMa);
+        for (int i=0;i<AnzMa;i++) {
+            Machine MachineX = new Machine(i,0);
+            Machines .add(MachineX);
+        }
+
+        // Liste der Prozesse erstellen
+        Prozess = new ArrayList<Operationen>(AnzOp);
+        for (int i=0;i<AnzOp;i++) {
+            Operationen Ops = new Operationen();
+            Prozess .add(Ops);
+        }
     }
 
 
@@ -53,6 +74,24 @@ public class Individuum {
             }
         }
         return maximum;
+    }
+
+    public int[] AddOneToArray (int[] Arr, int what){
+        // Case 1: Array is empty
+        if (Arr == null){
+            int[] NewArr = new int[1];
+            NewArr[0] = what;
+            return NewArr;
+        }
+        // Case 2: Array isnt empty
+        else {
+            int[] NewArr = new int[Arr.length + 1];
+            for (int i=0;i<Arr.length;i++){
+                NewArr[i] = Arr[i];
+            }
+            NewArr[Arr.length] = what;
+            return NewArr;
+        }
     }
 
     public int[] OneValue(int[] BarArr, int Value){
@@ -93,14 +132,44 @@ public class Individuum {
         return Copy;
     }
     
+    void correctingAllocation (int AnzMa, int AnzOp, List<Operationen> OperationsList){
 
+
+        // Liste der Maschinen erstellen
+        for (int i=0;i<AnzOp;i++){
+            Prozess.get(i).Maschinen = new int[AnzMa];
+            System.arraycopy(OperationsList.get(i).Maschinen, 0, Prozess.get(i).Maschinen, 0, AnzMa);
+        }
+
+
+        for (int i=0;i<AnzOp;i++){
+            int RequestedMachine = Zuordnung[i];
+            if (Prozess.get(i).Maschinen[RequestedMachine] == 0){
+                // Requested Machine cant do the operation
+                // Find available Machines
+                List<Integer> numbersAvailableMachines = new ArrayList<>(); 
+                for (int j=0;j<AnzMa;j++){
+                    if (Prozess.get(j).Maschinen[j] == 1){
+                        numbersAvailableMachines.add(j);
+                    }
+                }
+                // Pick random Machine
+                double randomMachine =  round((numbersAvailableMachines.size()-1) * Zufallszahl(),0);
+                int newMachine = (int) randomMachine;
+
+                //But new Machine in Allocation
+                Zuordnung[i] = numbersAvailableMachines.get(newMachine);
+            }
+        }
+
+
+    }
 
 
 
     // Methoden
     // Decodierung
     void decodierung(int AnzOp,int AnzMa, int[][] Vorrangmatrix, int[][] Maschinenzeiten){
-
 
         // VORBEREITUNG
         //Prozesszeitenmatrix bestimmen aus Zuordnung und Maschinenzeiten und Maschinenzeit in Matrix der Vorgänger-Prozess-Zeiten eintragen
@@ -120,21 +189,6 @@ public class Individuum {
                 }
             }
         }
-
-
-
-        // Liste der Maschinen erstellen
-        Machines = new ArrayList<Machine>(AnzMa);
-        for (int i=0;i<AnzMa;i++) {
-            Machine MachineX = new Machine(i,0);
-            Machines .add(MachineX);
-        }
-
-        Prozess = new ArrayList<Operationen>(AnzOp);
-        for (int i=0;i<AnzOp;i++) {
-            Operationen Ops = new Operationen();
-            Prozess .add(Ops);
-         }
 
         // Optional: Ist das hier wirklich notwendig?
         for (int i=0;i<AnzOp;i++) {
@@ -166,7 +220,6 @@ public class Individuum {
                     for (int z2=0;z2<AnzOp;z2++){
                         if (VorgängerZeiten[z2][FoundOp] !=0){
                             StartzeitenMatrix[z2][FoundOp] = max(StartzeitenMatrix[FoundOp]) + VorgängerZeiten[z2][FoundOp];
-                            //System.out.println(StartzeitenMatrix[z2][FoundOp]);
                         }
                     }
 
@@ -201,11 +254,6 @@ public class Individuum {
             OperationsDone = Count(AnfangsOp, -1);
         }
 
-        for (int k=0;k<AnzOp;k++){
-            System.out.print("\n");
-            for (int l=0;l<AnzOp;l++)
-            System.out.print(StartzeitenMatrix[k][l] + " ");
-        }
 
         //Fertigungszeiten berechnen
         int[] Fertigungszeiten = new int[AnzOp];
@@ -284,11 +332,9 @@ public class Individuum {
 
             for (int z=0;z<AnzOp;z++){
                 if (B[z]==1){
-
                     if (max(StartzeitenMatrix[z]) > (Startzeit + sigma * (Fertigungszeiten[OperationStrich] - Startzeit))){
                         B[z] = 0;
                     }
-
                 }
             }
 
@@ -368,7 +414,6 @@ public class Individuum {
                         for (int z2=0;z2<AnzOp;z2++){
                             if (VorgängerZeiten[z2][FoundOp] !=0){
                                 StartzeitenMatrix[z2][FoundOp] = max(StartzeitenMatrix[FoundOp]) + VorgängerZeiten[z2][FoundOp];
-                                //System.out.println(StartzeitenMatrix[z2][FoundOp]);
                             }
                         }
 
@@ -409,6 +454,10 @@ public class Individuum {
                 Fertigungszeiten[z] = max(StartzeitenMatrix[z]) + ProzesszeitenOp[z];
             }
 
+            //Give the working Machine some Information about the Operation
+            Machines.get(CurrentMachine).PlannedOperations = AddOneToArray(Machines.get(CurrentMachine).PlannedOperations, OperationStern);
+            Machines.get(CurrentMachine).Startzeiten = AddOneToArray(Machines.get(CurrentMachine).Startzeiten, StartzeitenOp[OperationStern]);
+            Machines.get(CurrentMachine).Endzeiten = AddOneToArray(Machines.get(CurrentMachine).Endzeiten, EndzeitenOp[OperationStern]);
 
             // Abbruchbedingung bestimmen
             GTAbbruchbedingung = Count(A, -1);
@@ -419,31 +468,15 @@ public class Individuum {
             Prozess.get(i).Endzeit = EndzeitenOp[i];
         }
 
-        //Machinen mit Infos füttern
-        for (int i=0;i<AnzMa;i++){
-            int AnzBlackOps = Count(Zuordnung, i);
-            int[] PlannedOps = new int[AnzBlackOps];
-            int k = 0;
-            for (int j=0;j<AnzOp;j++){
-                if (Zuordnung[j]==i){
-                    PlannedOps[k] = j;
-                    k++;
-                }
-            }
-            Machines.get(i).PlannedOperations = PlannedOps;
-        }
-
     }
 
 
-
     // 1-Bit-Mutation
-    void einbitmutation(int N){
+    void einbitmutation(int N, double MutProbability){
         
         for (int i = 0; i<N; i++) {
             double random = Zufallszahl();
-            System.out.println(random);
-            if (random<0.5) {
+            if (random<MutProbability){
                 if (Zuordnung[i]==1){
                     Zuordnung[i]=0;
                 } 
@@ -454,23 +487,63 @@ public class Individuum {
         }
     }
 
+    //Mixed Mutation
+    void mixedmutation(int nOp, float MixMutProbability, int typeCoding){
+
+        double random = Zufallszahl();
+        if(random > MixMutProbability){
+            int sectionStart = (int) round(Zufallszahl()*nOp,0);
+            int sectionEnd = (int) round(Zufallszahl()*nOp,0);
+            while (sectionEnd == sectionStart){
+                sectionEnd = (int) round(Zufallszahl()*nOp,0);
+            }
+            if (sectionEnd < sectionStart){
+                int temp = sectionStart;
+                sectionStart = sectionEnd;
+                sectionEnd = temp;
+            }
+
+            int[] tempArr = new int[sectionEnd-sectionStart];
+            if (typeCoding == 0){
+                System.arraycopy(Zuordnung, sectionStart, tempArr, 0, sectionEnd-sectionStart);
+                List<Integer> tempList = new ArrayList();
+                for (int k=0;k<tempArr.length;k++){
+                    tempList.add(tempArr[k]);
+                }
+                Collections.shuffle(tempList);
+                int[] MixedArr = tempList.stream().mapToInt(i->i).toArray();
+                System.arraycopy(MixedArr, 0, Zuordnung, sectionStart, sectionEnd-sectionStart);
+            }
+            else if (typeCoding == 1){
+                System.arraycopy(Sequenz, sectionStart, tempArr, 0, sectionEnd-sectionStart);
+                List<Integer> tempList = new ArrayList();
+                for (int k=0;k<tempArr.length;k++){
+                    tempList.add(tempArr[k]);
+                }
+                Collections.shuffle(tempList);
+                int[] MixedArr = tempList.stream().mapToInt(i->i).toArray();
+                System.arraycopy(MixedArr, 0, Sequenz, sectionStart, sectionEnd-sectionStart);
+            }
+            else{
+                System.out.println("Wrong Input for Coding Type of Mixed Mutation");
+            }
+        }
+    }
+
 
     // Swap-Mutation
-    void swapmutation(int N){
+    void swapmutation(int N, float MutProbability){
 
         for (int i = 0; i<N; i++) {
             double random = Zufallszahl();
-            System.out.println(random);
-            if (random<0.2) {
+            if (random<MutProbability) {
                 double random2 = round(Zufallszahl()*(N-1),0);
                 int randomposition = (int)random2;
-                System.out.println(randomposition);
                 int saveNumber = Sequenz[randomposition];
                 Sequenz[randomposition] = Sequenz[i];
                 Sequenz[i] = saveNumber;
             }
         }
     }
-
 
 }
