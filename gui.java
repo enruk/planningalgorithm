@@ -14,6 +14,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -31,9 +34,11 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
 
 public class gui extends Application {
 
@@ -50,6 +55,7 @@ public class gui extends Application {
     String filepath;
     Scene menu;
     Scene settings;
+    private TestTask test1;
 
     public static int[] AddToArray(int[] Arr, int what, int n) {
         int[] NewArr = new int[Arr.length + n];
@@ -70,8 +76,8 @@ public class gui extends Application {
     public void start(Stage primaryStage) {
 
         primaryStage.setTitle("Genetic Algorithm for FJSSPs");
-
-        Population P = new Population();
+        primaryStage.setMinHeight(500);
+        primaryStage.setMinWidth(500);
 
         // SETTINGS
         BorderPane SettingsLayout = new BorderPane();
@@ -314,7 +320,6 @@ public class gui extends Application {
         HBox HBoxTop = new HBox(20);
 
         TextField ProcessInput = new TextField("C:/Users/Henrik/Documents/ExampleProcess.xls");
-        ProcessInput.setMinWidth(500);
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select process (.xls only)");
@@ -373,102 +378,116 @@ public class gui extends Application {
         HBox HBoxBottom = new HBox(20);
         HBoxBottom.setAlignment(Pos.TOP_RIGHT);
 
+        Button ButtonSettings = new Button ("Detailed settings Genetic Algorithm");
+        ButtonSettings.setMinSize(225, 25);
+        ButtonSettings.setOnAction(e->primaryStage.setScene(settings));
+
+        Button StartGA = new Button("Start");
+        StartGA.setMinSize(60, 25);
+
         Label currentGen = new Label("Current Generation");
         currentGen.setMinWidth(200);
 
-        Button StartGA = new Button("Start");
-        StartGA.setOnAction(e -> {
+        final ProgressBar progressBar = new ProgressBar(0);
+        //progressBar.setMinWidth(600);
+        progressBar.prefWidthProperty().bind(HBoxBottom.widthProperty().subtract(20+ButtonSettings.getWidth()+StartGA.getWidth()));
+        progressBar.setMinHeight(25);
+        progressBar.setProgress(0);
+        final Label statusLabel = new Label();
+        statusLabel.setMinWidth(250);
+        statusLabel.setTextFill(Color.BLUE);
+        
 
-            // Read Main
-            String pSizeStr = PSizeText.getText();
-            p = Integer.parseInt(pSizeStr);
-            String AnzMaStr = NumResText.getText();
-            AnzMa = Integer.parseInt(AnzMaStr);
-            String MaxGenStr = maxGText.getText();
-            maxGen = Integer.parseInt(MaxGenStr);
+        StartGA.setOnAction(new EventHandler<ActionEvent>(){
 
-            // Read Settings
-            SettingsGA DetailedSettings = new SettingsGA();
+            @Override 
+            public void handle(ActionEvent event){
 
-            // Selection
-            String QTourStr = QTour.getText();
-            DetailedSettings.QTournaments = Integer.parseInt(QTourStr);
-            String SelReplaceStr = SelReplace.getText();
-            DetailedSettings.SelReplacement = Integer.parseInt(SelReplaceStr);
-
-            // Fitness
-            String RanksStr = Ranks.getText();
-            DetailedSettings.nRanks = Integer.parseInt(RanksStr);
-            String RankedFitStr = RankedFit.getText();
-            DetailedSettings.RankedFitness = Float.valueOf(RankedFitStr);
-
-            // Mutation Allocation
-            DetailedSettings.DoAlloBit = mutBoxAlloBit.isSelected();
-            DetailedSettings.DoAlloSwap = mutBoxAlloSwap.isSelected();
-            String MutAlloProbStr = MutAlloProb.getText();
-            DetailedSettings.MutAlloProbability = Float.valueOf(MutAlloProbStr);
-
-            // Mutation Sequence
-            DetailedSettings.DoSeqMix = mutBoxSeqMix.isSelected();
-            DetailedSettings.DoSeqSwap = mutBoxSeqSwap.isSelected();
-            String MutSeqProbStr = MutSeqProb.getText();
-            DetailedSettings.MutSeqProbability = Float.valueOf(MutSeqProbStr);
-
-            // Recombination Allocation
-            DetailedSettings.DoRecNPoint = recBoxAlloNPoint.isSelected();
-            DetailedSettings.DoRecUnif = recBoxAlloUnif.isSelected();
-            String RecAlloProbStr = RecAlloProb.getText();
-            DetailedSettings.RecAlloProbability = Float.valueOf(RecAlloProbStr);
-
-            // Recombination Sequence
-            DetailedSettings.DoRecOrder = recBoxSeqOrder.isSelected();
-            DetailedSettings.DoRecPMX = recBoxSeqPMX.isSelected();
-            String RecSeqProbStr = RecSeqProb.getText();
-            DetailedSettings.RecSeqProbability = Float.valueOf(RecSeqProbStr);
-
-
-
-
-            Stage progressStage = new Stage();
-            ProgressBar progressBar = new ProgressBar(0);
-            FlowPane root = new FlowPane();
-            Scene progressScene = new Scene(root, 300, 150);
-            progressStage.setTitle("Working Progress");
-            ObservableValue<Integer> test;
-
-            for (int i=0;i<1000000;i++){
-                progressBar.setProgress(i/1000000);
-            }
-            
-
-            root.setPadding(new Insets(10));
-            root.setHgap(10);
-            root.getChildren().addAll(progressBar);
-            progressStage.setScene(progressScene);
-            progressStage.show();
-
-            
+                StartGA.setDisable(true);
+                ButtonChooseProcess.setDisable(true);
                 
 
-            //Population P = new Population(p,AnzMa);
-            P.GenetischerAlgorithmus(p,AnzMa,maxGen,DetailedSettings);
+                // Read Main
+                String pSizeStr = PSizeText.getText();
+                p = Integer.parseInt(pSizeStr);
+                String AnzMaStr = NumResText.getText();
+                AnzMa = Integer.parseInt(AnzMaStr);
+                String MaxGenStr = maxGText.getText();
+                maxGen = Integer.parseInt(MaxGenStr);
+
+                // Read Settings
+                SettingsGA DetailedSettings = new SettingsGA();
+
+                // Selection
+                String QTourStr = QTour.getText();
+                DetailedSettings.QTournaments = Integer.parseInt(QTourStr);
+                String SelReplaceStr = SelReplace.getText();
+                DetailedSettings.SelReplacement = Integer.parseInt(SelReplaceStr);
+
+                // Fitness
+                String RanksStr = Ranks.getText();
+                DetailedSettings.nRanks = Integer.parseInt(RanksStr);
+                String RankedFitStr = RankedFit.getText();
+                DetailedSettings.RankedFitness = Float.valueOf(RankedFitStr);
+
+                // Mutation Allocation
+                DetailedSettings.DoAlloBit = mutBoxAlloBit.isSelected();
+                DetailedSettings.DoAlloSwap = mutBoxAlloSwap.isSelected();
+                String MutAlloProbStr = MutAlloProb.getText();
+                DetailedSettings.MutAlloProbability = Float.valueOf(MutAlloProbStr);
+
+                // Mutation Sequence
+                DetailedSettings.DoSeqMix = mutBoxSeqMix.isSelected();
+                DetailedSettings.DoSeqSwap = mutBoxSeqSwap.isSelected();
+                String MutSeqProbStr = MutSeqProb.getText();
+                DetailedSettings.MutSeqProbability = Float.valueOf(MutSeqProbStr);
+
+                // Recombination Allocation
+                DetailedSettings.DoRecNPoint = recBoxAlloNPoint.isSelected();
+                DetailedSettings.DoRecUnif = recBoxAlloUnif.isSelected();
+                String RecAlloProbStr = RecAlloProb.getText();
+                DetailedSettings.RecAlloProbability = Float.valueOf(RecAlloProbStr);
+
+                // Recombination Sequence
+                DetailedSettings.DoRecOrder = recBoxSeqOrder.isSelected();
+                DetailedSettings.DoRecPMX = recBoxSeqPMX.isSelected();
+                String RecSeqProbStr = RecSeqProb.getText();
+                DetailedSettings.RecSeqProbability = Float.valueOf(RecSeqProbStr);
+
+
+
+                // Create Task
+                taskGA taskGeneticAlgorithm = new taskGA(p,AnzMa,maxGen,DetailedSettings);
+
+                //UnBind
+                progressBar.progressProperty().unbind();
+
+                //Bind
+                progressBar.progressProperty().bind(taskGeneticAlgorithm.progressProperty());
+
+                //Start
+                new Thread(taskGeneticAlgorithm).start();
+
+                //When completed Task
+                taskGeneticAlgorithm.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, new EventHandler<WorkerStateEvent>(){
+                    @Override
+                    public void handle(WorkerStateEvent t){
+                        StartGA.setDisable(false);
+                        ButtonChooseProcess.setDisable(false);
+                    }
+                });
+
+            }
         });
 
-
-        Button ButtonSettings = new Button ("Detailed settings Genetic Algorithm");
-        ButtonSettings.setOnAction(e->primaryStage.setScene(settings));
-
-
-
-
-        HBoxBottom.getChildren().addAll(currentGen,ButtonSettings,StartGA);
+        HBoxBottom.getChildren().addAll(progressBar,ButtonSettings,StartGA);
         MainLayout.setBottom(HBoxBottom);
         
         menu = new Scene(MainLayout,1000,500);
 
 
         primaryStage.setScene(menu);
-        primaryStage.setResizable(false);
+        primaryStage.setResizable(true);
         primaryStage.show();
 
     }

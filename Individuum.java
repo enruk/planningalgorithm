@@ -10,6 +10,9 @@ public class Individuum {
     int Nummer;
     int Geburtsgeneration;
 
+    int nOp;
+    int nMa;
+
     int[] Zuordnung;
     int[] Sequenz;
     int[] StartzeitenOp; // Unnötig mit Liste Prozess, evtl nur für Funkton wie max einfacher
@@ -28,6 +31,8 @@ public class Individuum {
     //Konstruktor
     Individuum(int Num, int startgen, int AnzOp, int AnzMa){
         Nummer=Num;
+        nOp = AnzOp;
+        nMa = AnzMa;
         Geburtsgeneration=startgen;
         Zuordnung = new int[AnzOp];
         Sequenz = new int[AnzOp];
@@ -48,7 +53,7 @@ public class Individuum {
         Prozess = new ArrayList<Operationen>(AnzOp);
         for (int i=0;i<AnzOp;i++) {
             Operationen Ops = new Operationen();
-            Prozess .add(Ops);
+            Prozess.add(Ops);
         }
     }
 
@@ -132,23 +137,24 @@ public class Individuum {
         return Copy;
     }
     
-    void correctingAllocation (int AnzMa, int AnzOp, List<Operationen> OperationsList){
+    void correctingAllocation (List<Operationen> OperationsList){
 
 
         // Liste der Maschinen erstellen
-        for (int i=0;i<AnzOp;i++){
-            Prozess.get(i).Maschinen = new int[AnzMa];
-            System.arraycopy(OperationsList.get(i).Maschinen, 0, Prozess.get(i).Maschinen, 0, AnzMa);
+        for (int i=0;i<nOp;i++){
+            Prozess.get(i).Maschinen = new int[nMa];
+            System.arraycopy(OperationsList.get(i).Maschinen, 0, Prozess.get(i).Maschinen, 0, nMa);
+            // Unterschied OperationsList und Prozess
         }
 
 
-        for (int i=0;i<AnzOp;i++){
+        for (int i=0;i<nOp;i++){
             int RequestedMachine = Zuordnung[i];
             if (Prozess.get(i).Maschinen[RequestedMachine] == 0){
                 // Requested Machine cant do the operation
                 // Find available Machines
                 List<Integer> numbersAvailableMachines = new ArrayList<>(); 
-                for (int j=0;j<AnzMa;j++){
+                for (int j=0;j<nMa;j++){
                     if (Prozess.get(j).Maschinen[j] == 1){
                         numbersAvailableMachines.add(j);
                     }
@@ -165,22 +171,19 @@ public class Individuum {
 
     }
 
-
-
-    // Methoden
     // Decodierung
-    void decodierung(int AnzOp,int AnzMa, int[][] Vorrangmatrix, int[][] Maschinenzeiten){
+    void decodierung(int[][] Vorrangmatrix, int[][] Maschinenzeiten){
 
         // VORBEREITUNG
         //Prozesszeitenmatrix bestimmen aus Zuordnung und Maschinenzeiten und Maschinenzeit in Matrix der Vorgänger-Prozess-Zeiten eintragen
-        for (int z=0;z<AnzOp;z++){
+        for (int z=0;z<nOp;z++){
             int WorkingMachine = Zuordnung[z];
             ProzesszeitenOp[z] = Maschinenzeiten[z][WorkingMachine]; 
         }
     
 
-        for (int z=0;z<AnzOp;z++){
-            for (int s=0;s<AnzOp;s++){
+        for (int z=0;z<nOp;z++){
+            for (int s=0;s<nOp;s++){
                 if  (Vorrangmatrix[z][s]==1){
                     VorgängerZeiten[z][s] = ProzesszeitenOp[s];
                 }
@@ -191,7 +194,7 @@ public class Individuum {
         }
 
         // Optional: Ist das hier wirklich notwendig?
-        for (int i=0;i<AnzOp;i++) {
+        for (int i=0;i<nOp;i++) {
             Prozess.get(i).Prozesszeit = ProzesszeitenOp[i];
             Prozess.get(i).WorkingMachine = Zuordnung[i];
         }
@@ -199,31 +202,31 @@ public class Individuum {
 
 
         // StartzeitenMatrix bestimmen
-        int[] AnfangsOp = new int[AnzOp];
+        int[] AnfangsOp = new int[nOp];
         int[][] VorgängerOp = CopyArray(Vorrangmatrix);
 
 
-        for (int z=0;z<AnzOp;z++){
+        for (int z=0;z<nOp;z++){
             if (max(VorgängerZeiten[z])<0.1){
                 AnfangsOp[z]=1;
             }
         }
 
         int OperationsDone = 0;
-        while (OperationsDone < AnzOp){
+        while (OperationsDone < nOp){
 
             //Startzeiten einer Operation: t = Startzeit des Vorgängers und Prozesszeit des Vorgängers (steht in VorgängerZeiten schon drin)
-            for (int z=0;z<AnzOp;z++){
+            for (int z=0;z<nOp;z++){
                 int FoundOp = 0;
                 if (AnfangsOp[z] == 1){
                     FoundOp = z;
-                    for (int z2=0;z2<AnzOp;z2++){
+                    for (int z2=0;z2<nOp;z2++){
                         if (VorgängerZeiten[z2][FoundOp] !=0){
                             StartzeitenMatrix[z2][FoundOp] = max(StartzeitenMatrix[FoundOp]) + VorgängerZeiten[z2][FoundOp];
                         }
                     }
 
-                for (int z3=0;z3<AnzOp;z3++){
+                for (int z3=0;z3<nOp;z3++){
                     if (VorgängerOp[z3][FoundOp] == 1){
                         VorgängerOp[z3][FoundOp] = 0; // FoundOp gilt als ausgeführt und ist daher nicht länger Vorgänger der Operation in Zeile s
                     }
@@ -237,7 +240,7 @@ public class Individuum {
             }
 
             //Anfangsoperationen neu bestimmen
-            for (int z=0;z<AnzOp;z++){
+            for (int z=0;z<nOp;z++){
                 if (max(VorgängerOp[z])==0){
                     AnfangsOp[z] = 1;
                 }
@@ -256,21 +259,21 @@ public class Individuum {
 
 
         //Fertigungszeiten berechnen
-        int[] Fertigungszeiten = new int[AnzOp];
-        for (int z=0;z<AnzOp;z++){
+        int[] Fertigungszeiten = new int[nOp];
+        for (int z=0;z<nOp;z++){
             Fertigungszeiten[z] = max(StartzeitenMatrix[z]) + ProzesszeitenOp[z];
         }
 
 
-        int[] A = new int[AnzOp];
+        int[] A = new int[nOp];
         int[][] V = CopyArray(Vorrangmatrix);
-        int[] B = new int[AnzOp];
+        int[] B = new int[nOp];
         int OperationStrich;
         int OperationStrichStrich;
         int OperationStern;
 
 
-        for (int z=0;z<AnzOp;z++){
+        for (int z=0;z<nOp;z++){
             if (max(Vorrangmatrix[z]) < 0.1)
                 A[z] = 1;
             else{
@@ -281,14 +284,14 @@ public class Individuum {
 
         // Beginn GT Algorithmus
         int GTAbbruchbedingung = 0;
-        while (GTAbbruchbedingung < AnzOp){
+        while (GTAbbruchbedingung < nOp){
             OperationStrich = 0;
             OperationStrichStrich = 0; 
             OperationStern = 0;
 
             // GT - Schritt 2.H1: Ermittlung von O'
             int FruhsteFertigungszeit = 1000;
-            for (int z=0;z<AnzOp;z++){
+            for (int z=0;z<nOp;z++){
                 if (A[z] == 1 && Fertigungszeiten[z]< FruhsteFertigungszeit){
                      OperationStrich = z;
                      FruhsteFertigungszeit = Fertigungszeiten[z];
@@ -299,7 +302,7 @@ public class Individuum {
             // Ermitteln der Resource / Maschine
             int CurrentMachine = Zuordnung[OperationStrich];
 
-            for (int z=0;z<AnzOp;z++){
+            for (int z=0;z<nOp;z++){
                 if (A[z]==1 && Zuordnung[z]==CurrentMachine){
                     B[z]=1;
                 }
@@ -310,7 +313,7 @@ public class Individuum {
             
             // GT - Schritt 2.H3: Ermittlung von OperationStrichStrich
             int FruhsteStartzeit = 1000;
-            for (int z=0;z<AnzOp;z++){
+            for (int z=0;z<nOp;z++){
                 if (B[z]==1 && max(StartzeitenMatrix[z])<FruhsteStartzeit){
                     OperationStrichStrich = z;
                     FruhsteStartzeit = max(StartzeitenMatrix[z]);
@@ -330,7 +333,7 @@ public class Individuum {
             
             double sigma = 0.5;
 
-            for (int z=0;z<AnzOp;z++){
+            for (int z=0;z<nOp;z++){
                 if (B[z]==1){
                     if (max(StartzeitenMatrix[z]) > (Startzeit + sigma * (Fertigungszeiten[OperationStrich] - Startzeit))){
                         B[z] = 0;
@@ -341,7 +344,7 @@ public class Individuum {
             //GT - Schritt 2.H5: OperationStern ermitteln
 
             int Permutation = 1000;
-            for (int z=0;z<AnzOp;z++){
+            for (int z=0;z<nOp;z++){
                 if (B[z]==1 && Sequenz[z]<Permutation){
                     Permutation = Sequenz[z];
                     OperationStern = z;
@@ -350,7 +353,7 @@ public class Individuum {
 
             //OperationStern aus A löschen
             A[OperationStern] = -1;
-            for (int z=0;z<AnzOp;z++){
+            for (int z=0;z<nOp;z++){
                 if (A[z] != -1){
                     V[z][OperationStern] = 0;
                 }
@@ -370,7 +373,7 @@ public class Individuum {
 
             // GT - Schritt 4: Nachfolger von O* zu A hinzufügen
 
-            for (int z=0;z<AnzOp;z++){
+            for (int z=0;z<nOp;z++){
 
                 if (max(V[z]) == 0){
                     A[z] = 1;
@@ -384,9 +387,9 @@ public class Individuum {
             }
 
             // GT - Schritt 5: Belegungszeiten aktualisieren
-            for (int z=0;z<AnzOp;z++){
+            for (int z=0;z<nOp;z++){
                 if (A[z] != -1 && Zuordnung[z] == CurrentMachine){
-                    StartzeitenMatrix[z][AnzOp] = EndzeitenOp[OperationStern];
+                    StartzeitenMatrix[z][nOp] = EndzeitenOp[OperationStern];
                 }
             }
 
@@ -396,7 +399,7 @@ public class Individuum {
             AnfangsOp = OneValue(AnfangsOp, 0);
             VorgängerOp = CopyArray(Vorrangmatrix);
 
-            for (int z=0;z<AnzOp;z++){
+            for (int z=0;z<nOp;z++){
                 if (max(VorgängerZeiten[z])<0.1){
                     AnfangsOp[z]=1;
                 }
@@ -404,20 +407,20 @@ public class Individuum {
         
 
             OperationsDone = 0;
-            while (OperationsDone < AnzOp){
+            while (OperationsDone < nOp){
 
                 //Startzeiten einer Operation: t = Startzeit des Vorgängers und Prozesszeit des Vorgängers (steht in VorgängerZeiten schon drin)
-                for (int z=0;z<AnzOp;z++){
+                for (int z=0;z<nOp;z++){
                     int FoundOp = 0;
                     if (AnfangsOp[z] == 1){
                         FoundOp = z;
-                        for (int z2=0;z2<AnzOp;z2++){
+                        for (int z2=0;z2<nOp;z2++){
                             if (VorgängerZeiten[z2][FoundOp] !=0){
                                 StartzeitenMatrix[z2][FoundOp] = max(StartzeitenMatrix[FoundOp]) + VorgängerZeiten[z2][FoundOp];
                             }
                         }
 
-                    for (int z3=0;z3<AnzOp;z3++){
+                    for (int z3=0;z3<nOp;z3++){
                         if (VorgängerOp[z3][FoundOp] == 1){
                             VorgängerOp[z3][FoundOp] = 0; // FoundOp gilt als ausgeführt und ist daher nicht länger Vorgänger der Operation in Zeile s
                         }
@@ -431,7 +434,7 @@ public class Individuum {
                 }
 
                 //Anfangsoperationen neu bestimmen
-                for (int z=0;z<AnzOp;z++){
+                for (int z=0;z<nOp;z++){
                     if (max(VorgängerOp[z])==0){
                         AnfangsOp[z] = 1;
                     }
@@ -450,7 +453,7 @@ public class Individuum {
 
 
             //Fertigungszeiten berechnen
-            for (int z=0;z<AnzOp;z++){
+            for (int z=0;z<nOp;z++){
                 Fertigungszeiten[z] = max(StartzeitenMatrix[z]) + ProzesszeitenOp[z];
             }
 
@@ -463,7 +466,7 @@ public class Individuum {
             GTAbbruchbedingung = Count(A, -1);
         }
 
-        for (int i=0;i<AnzOp;i++){
+        for (int i=0;i<nOp;i++){
             Prozess.get(i).Startzeit = StartzeitenOp[i];
             Prozess.get(i).Endzeit = EndzeitenOp[i];
         }
