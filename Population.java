@@ -119,7 +119,7 @@ public class Population {
                 int Machine = (int) RandomMachine;
                 RandomAllocation[j] = Machine;
             }
-            Individuen.get(i).Zuordnung = CopyArr(RandomAllocation);
+            Individuen.get(i).Allocation = CopyArr(RandomAllocation);
         }
 
         // Zufällig Sequenz in alle Individuen befüllen
@@ -136,7 +136,7 @@ public class Population {
                 RandomSequenz[j] = RandomSequenz[randomposition];
                 RandomSequenz[randomposition] = SaveNum;
             }
-            Individuen.get(i).Sequenz = CopyArr(RandomSequenz);
+            Individuen.get(i).Sequence = CopyArr(RandomSequenz);
         }
     }
 
@@ -158,7 +158,15 @@ public class Population {
 
         int[] FinishingTimes = new int[Temp.size()];
         for (int i=0;i<Temp.size();i++){
-            FinishingTimes[i] = max(Temp.get(i).EndzeitenOp);
+            int maxValue = 0;
+            int tempValue = 0;
+            for (int j=0;j<nOp;j++){
+                tempValue = Temp.get(i).Process.get(j).timeEnd;
+                if(tempValue > maxValue){
+                    maxValue = tempValue;
+                }
+            }
+            FinishingTimes[i] = maxValue;
         }
 
         int MaxFinishingTimes = max(FinishingTimes);
@@ -170,8 +178,8 @@ public class Population {
         for (int r=1;r<nRank+1;r++){
             for (int i=0;i<Temp.size();i++){
                 if (FinishingTimes[i] <= MaxFinishingTimes - (r-1)*RangeEachRank){
-                    Temp.get(i).SUSRank = r; //eigentlich jetzt unnötig
-                    Temp.get(i).TimeFitness = RankedFitness[r-1];
+                    Temp.get(i).susRank = r; //eigentlich jetzt unnötig
+                    Temp.get(i).timeFitness = RankedFitness[r-1];
                 }
             }
         }
@@ -195,7 +203,7 @@ public class Population {
         //SUS Verfahren
         float SumFitness=0;
         for (int i=0;i<p;i++){
-            SumFitness = SumFitness + Individuen.get(i).TimeFitness;
+            SumFitness = SumFitness + Individuen.get(i).timeFitness;
         }
 
         float PointerRange = SumFitness / (2*p);
@@ -210,7 +218,7 @@ public class Population {
         Wheel[0] = 0;
 
         for (int i=1;i<=p;i++){
-            Wheel[i] = Individuen.get(i-1).TimeFitness + Wheel[i-1];
+            Wheel[i] = Individuen.get(i-1).timeFitness + Wheel[i-1];
         }
 
         float TopBorder;
@@ -275,8 +283,8 @@ public class Population {
                 // Creating new Arrays
                 int[] Allocation1 = new int[nOp];
                 int[] Allocation2 = new int[nOp];
-                System.arraycopy(Parents.get(PairingRandom[i * 2]).Zuordnung, 0, Allocation1, 0, nOp);
-                System.arraycopy(Parents.get(PairingRandom[i * 2+1]).Zuordnung, 0, Allocation2, 0, nOp);
+                System.arraycopy(Parents.get(PairingRandom[i * 2]).Allocation, 0, Allocation1, 0, nOp);
+                System.arraycopy(Parents.get(PairingRandom[i * 2+1]).Allocation, 0, Allocation2, 0, nOp);
 
                 int[] Child = new int[nOp];
 
@@ -313,7 +321,7 @@ public class Population {
                         }
                     }
                 }
-                System.arraycopy(Child,0,Children.get(i).Zuordnung,0,nOp);
+                System.arraycopy(Child,0,Children.get(i).Allocation,0,nOp);
             }
         }
     }
@@ -329,8 +337,8 @@ public class Population {
                 int[] Sequence1 = new int[nOp];
                 int[] Sequence2 = new int[nOp];
 
-                System.arraycopy(Parents.get(PairingRandom[i * 2]).Sequenz, 0, Sequence1, 0, nOp);
-                System.arraycopy(Parents.get(PairingRandom[i * 2+1]).Sequenz, 0, Sequence2, 0, nOp);
+                System.arraycopy(Parents.get(PairingRandom[i * 2]).Sequence, 0, Sequence1, 0, nOp);
+                System.arraycopy(Parents.get(PairingRandom[i * 2+1]).Sequence, 0, Sequence2, 0, nOp);
 
 
                 // Get one section
@@ -359,7 +367,7 @@ public class Population {
                         Child[k] = value;
                     }
                 }
-                System.arraycopy(Child,0,Children.get(i).Sequenz,0,nOp);
+                System.arraycopy(Child,0,Children.get(i).Sequence,0,nOp);
             }
 
         }
@@ -374,11 +382,11 @@ public class Population {
         for (int q=0;q<detailedSettingsGA.QTournaments;q++){
             Collections.shuffle(Temp);
             for (int m=0;m<Temp.size()/2;m++){
-                if (Temp.get(m*2).TimeFitness>=Temp.get(m*2+1).TimeFitness){
-                    Temp.get(m*2).TournamentWins++;
+                if (Temp.get(m*2).timeFitness>=Temp.get(m*2+1).timeFitness){
+                    Temp.get(m*2).tournamentWins++;
                 }
                 else{
-                    Temp.get(m*2+1).TournamentWins++;
+                    Temp.get(m*2+1).tournamentWins++;
                 }
             }
         }

@@ -7,53 +7,47 @@ import java.util.List;
 
 
 public class Individuum {
-    int Nummer;
+    int Number;
     int Geburtsgeneration;
 
     int nOp;
     int nMa;
 
-    int[] Zuordnung;
-    int[] Sequenz;
-    int[] StartzeitenOp; // Unnötig mit Liste Prozess, evtl nur für Funkton wie max einfacher
-    int[] EndzeitenOp; // Unnötig mit Liste Prozess
-    int[] ProzesszeitenOp; // Unnötig mit Liste Prozess
-    int[][] VorgängerZeiten;
-    int[][] StartzeitenMatrix;
-    float TimeFitness;
-    int SUSRank;
-    int TournamentWins;
+    int[] Allocation;
+    int[] Sequence;
+    int[][] predecessorTimes;
+    int[][] startingTimeMatrix;
+    float timeFitness;
+    int susRank;
+    int tournamentWins;
 
-    List<Machine> Machines;
-    List<Operationen> Prozess;
+    List<Machine> Machines; 
+    List<Operationen> Process;  
 
 
     //Konstruktor
     Individuum(int Num, int startgen, int AnzOp, int AnzMa){
-        Nummer=Num;
+        Number=Num;
         nOp = AnzOp;
         nMa = AnzMa;
         Geburtsgeneration=startgen;
-        Zuordnung = new int[AnzOp];
-        Sequenz = new int[AnzOp];
-        StartzeitenOp = new int[AnzOp];
-        EndzeitenOp = new int[AnzOp];
-        ProzesszeitenOp = new int[AnzOp];
-        VorgängerZeiten = new int[AnzOp][AnzOp];
-        StartzeitenMatrix = new int[AnzOp][AnzOp+1];
+        Allocation = new int[AnzOp];
+        Sequence = new int[AnzOp];
+        predecessorTimes = new int[AnzOp][AnzOp];
+        startingTimeMatrix = new int[AnzOp][AnzOp+1];
 
         // Liste der Maschinen erstellen
-        Machines = new ArrayList<Machine>(AnzMa);
+        Machines = new ArrayList<>(AnzMa);
         for (int i=0;i<AnzMa;i++) {
             Machine MachineX = new Machine(i,0);
             Machines .add(MachineX);
         }
 
         // Liste der Prozesse erstellen
-        Prozess = new ArrayList<Operationen>(AnzOp);
+        Process = new ArrayList<>(AnzOp);
         for (int i=0;i<AnzOp;i++) {
-            Operationen Ops = new Operationen();
-            Prozess.add(Ops);
+            Operationen Ops = new Operationen(nOp,nMa);
+            Process.add(Ops);
         }
     }
 
@@ -127,7 +121,7 @@ public class Individuum {
         return CountDoku;
     }
 
-    public int[][] CopyArray (int[][] Arr) {
+    public int[][] copyMatrix (int[][] Arr) {
         int[][] Copy = new int[Arr.length][Arr[0].length];
         for (int i = 0; i < Arr.length; i++) {
             for (int j = 0; j < Arr[0].length; j++) {
@@ -136,26 +130,28 @@ public class Individuum {
         }
         return Copy;
     }
+
+
     
     void correctingAllocation (List<Operationen> OperationsList){
 
 
         // Liste der Maschinen erstellen
         for (int i=0;i<nOp;i++){
-            Prozess.get(i).Maschinen = new int[nMa];
-            System.arraycopy(OperationsList.get(i).Maschinen, 0, Prozess.get(i).Maschinen, 0, nMa);
+            Process.get(i).Machines = new int[nMa];
+            System.arraycopy(OperationsList.get(i).Machines, 0, Process.get(i).Machines, 0, nMa);
             // Unterschied OperationsList und Prozess
         }
 
 
         for (int i=0;i<nOp;i++){
-            int RequestedMachine = Zuordnung[i];
-            if (Prozess.get(i).Maschinen[RequestedMachine] == 0){
+            int RequestedMachine = Allocation[i];
+            if (Process.get(i).Machines[RequestedMachine] == 0){
                 // Requested Machine cant do the operation
                 // Find available Machines
                 List<Integer> numbersAvailableMachines = new ArrayList<>(); 
                 for (int j=0;j<nMa;j++){
-                    if (Prozess.get(j).Maschinen[j] == 1){
+                    if (Process.get(j).Machines[j] == 1){
                         numbersAvailableMachines.add(j);
                     }
                 }
@@ -163,8 +159,8 @@ public class Individuum {
                 double randomMachine =  round((numbersAvailableMachines.size()-1) * Zufallszahl(),0);
                 int newMachine = (int) randomMachine;
 
-                //But new Machine in Allocation
-                Zuordnung[i] = numbersAvailableMachines.get(newMachine);
+                //Put new Machine in Allocation
+                Allocation[i] = numbersAvailableMachines.get(newMachine);
             }
         }
 
@@ -177,100 +173,113 @@ public class Individuum {
         // VORBEREITUNG
         //Prozesszeitenmatrix bestimmen aus Zuordnung und Maschinenzeiten und Maschinenzeit in Matrix der Vorgänger-Prozess-Zeiten eintragen
         for (int z=0;z<nOp;z++){
-            int WorkingMachine = Zuordnung[z];
-            ProzesszeitenOp[z] = Maschinenzeiten[z][WorkingMachine]; 
+            int WorkingMachine = Allocation[z]; 
+            Process.get(z).timeWorking = Maschinenzeiten[z][WorkingMachine];
         }
     
 
         for (int z=0;z<nOp;z++){
             for (int s=0;s<nOp;s++){
                 if  (Vorrangmatrix[z][s]==1){
-                    VorgängerZeiten[z][s] = ProzesszeitenOp[s];
+                    predecessorTimes[z][s] = Process.get(s).timeWorking;
                 }
                 else{
-                    VorgängerZeiten[z][s] = 0;
+                    predecessorTimes[z][s] = 0;
                 }
             }
         }
 
         // Optional: Ist das hier wirklich notwendig?
         for (int i=0;i<nOp;i++) {
-            Prozess.get(i).Prozesszeit = ProzesszeitenOp[i];
-            Prozess.get(i).WorkingMachine = Zuordnung[i];
+            Process.get(i).workingMachine = Allocation[i];
+        }
+        
+        // Get the predecessors of every Operation  and save them under Process.get(x).Predecessors
+        for (int i=0;i<nOp;i++){
+            System.arraycopy(Vorrangmatrix[i], Vorrangmatrix[i][0], Process.get(i).Predecessor, Process.get(i).Predecessor[0],Vorrangmatrix[i].length);
         }
 
-
-
-        // StartzeitenMatrix bestimmen
-        int[] AnfangsOp = new int[nOp];
-        int[][] VorgängerOp = CopyArray(Vorrangmatrix);
-
-
+        // Get the starting Operations
         for (int z=0;z<nOp;z++){
-            if (max(VorgängerZeiten[z])<0.1){
-                AnfangsOp[z]=1;
+            if (max(predecessorTimes[z])==0){
+                Process.get(z).operationReadyToStart = true;
+                Process.get(z).operationNotReady = false;
             }
         }
 
+        // Calculate startingTimeMatrix: t_Op = t_PredecessorStart(from startingTimeMatrix) + t_PredecessorProcess(from predecessorTimes);
         int OperationsDone = 0;
         while (OperationsDone < nOp){
 
-            //Startzeiten einer Operation: t = Startzeit des Vorgängers und Prozesszeit des Vorgängers (steht in VorgängerZeiten schon drin)
+            
             for (int z=0;z<nOp;z++){
                 int FoundOp = 0;
-                if (AnfangsOp[z] == 1){
+
+                // Search for starting Operation
+                if (Process.get(z).operationReadyToStart == true){
                     FoundOp = z;
                     for (int z2=0;z2<nOp;z2++){
-                        if (VorgängerZeiten[z2][FoundOp] !=0){
-                            StartzeitenMatrix[z2][FoundOp] = max(StartzeitenMatrix[FoundOp]) + VorgängerZeiten[z2][FoundOp];
+                        if (predecessorTimes[z2][FoundOp] !=0){
+                            startingTimeMatrix[z2][FoundOp] = max(startingTimeMatrix[FoundOp]) + predecessorTimes[z2][FoundOp]; //t_Op = t_PredecessorStart(from startingTimeMatrix) + t_PredecessorProcess(from predecessorTimes)
                         }
                     }
 
+                // Mark the found operation as done
                 for (int z3=0;z3<nOp;z3++){
-                    if (VorgängerOp[z3][FoundOp] == 1){
-                        VorgängerOp[z3][FoundOp] = 0; // FoundOp gilt als ausgeführt und ist daher nicht länger Vorgänger der Operation in Zeile s
+                    if (Process.get(z3).Predecessor[FoundOp] == 1){
+                        Process.get(z3).Predecessor[FoundOp] = 0; // FoundOp is done and is now no longer a predecessor on which other operations have to wait for
                     }
-                    
                 }
 
-                VorgängerOp[FoundOp] = OneValue(VorgängerOp[FoundOp],-1);
-                AnfangsOp[FoundOp] = -1;
-
+                Process.get(FoundOp).operationDone = true;
                 }
             }
 
-            //Anfangsoperationen neu bestimmen
+            //Calculate new  Starting Operations
             for (int z=0;z<nOp;z++){
-                if (max(VorgängerOp[z])==0){
-                    AnfangsOp[z] = 1;
+
+                // Operation has no remaining Predecessor and wasnt done yet: Ready to Start
+                if (max(Process.get(z).Predecessor)==0 && Process.get(z).operationDone == false){
+                    Process.get(z).operationReadyToStart = true;
+                    Process.get(z).operationNotReady = false;
                 }
-                if (max(VorgängerOp[z])==-1){
-                    AnfangsOp[z] = -1;
+
+                // Operation has no remaining Predecessor, but i already done
+                if (max(Process.get(z).Predecessor)==0 && Process.get(z).operationDone == true){
+                    Process.get(z).operationReadyToStart = false;
+                    Process.get(z).operationNotReady = false;
                 }
-                if (max(VorgängerOp[z]) == 1){
-                    AnfangsOp[z] = 0;
+
+                // Operation still has remaining Predecessors
+                if (max(Process.get(z).Predecessor)!=0){
+                    Process.get(z).operationNotReady = true;
                 }
             }
 
 
             //Abbruchbedingungen ermitteln
-            OperationsDone = Count(AnfangsOp, -1);
+            OperationsDone = 0;
+            for (int z=0;z<nOp;z++){
+                if(Process.get(z).operationDone == true){
+                    OperationsDone++;
+                }
+            }
         }
 
 
         //Fertigungszeiten berechnen
-        int[] Fertigungszeiten = new int[nOp];
+        int[] timesProduction = new int[nOp];
         for (int z=0;z<nOp;z++){
-            Fertigungszeiten[z] = max(StartzeitenMatrix[z]) + ProzesszeitenOp[z];
+            timesProduction[z] = max(startingTimeMatrix[z]) + Process.get(z).timeWorking;
         }
 
 
         int[] A = new int[nOp];
-        int[][] V = CopyArray(Vorrangmatrix);
+        int[][] V = copyMatrix(Vorrangmatrix);
         int[] B = new int[nOp];
-        int OperationStrich;
-        int OperationStrichStrich;
-        int OperationStern;
+        int operationDash;
+        int operationDashDash;
+        int operationStar;
 
 
         for (int z=0;z<nOp;z++){
@@ -285,25 +294,24 @@ public class Individuum {
         // Beginn GT Algorithmus
         int GTAbbruchbedingung = 0;
         while (GTAbbruchbedingung < nOp){
-            OperationStrich = 0;
-            OperationStrichStrich = 0; 
-            OperationStern = 0;
+            operationDash = 0;
+            operationDashDash = 0; 
+            operationStar = 0;
 
-            // GT - Schritt 2.H1: Ermittlung von O'
-            int FruhsteFertigungszeit = 1000;
+            // GT - Step 2.H1: Get O' (Operation with earliest Productiontime, finsihed first)
+            int earliestProductiontime = 1000;
             for (int z=0;z<nOp;z++){
-                if (A[z] == 1 && Fertigungszeiten[z]< FruhsteFertigungszeit){
-                     OperationStrich = z;
-                     FruhsteFertigungszeit = Fertigungszeiten[z];
+                if (A[z] == 1 && timesProduction[z]< earliestProductiontime){
+                     operationDash = z;
+                     earliestProductiontime = timesProduction[z];
                 }
             }
 
-            // GT - Schritt 2.H2: Menge B bestimmen
-            // Ermitteln der Resource / Maschine
-            int CurrentMachine = Zuordnung[OperationStrich];
+            // GT - Step 2.H2: Get B, all Operations of A on the same Machine as O'
+            int CurrentMachine = Allocation[operationDash];
 
             for (int z=0;z<nOp;z++){
-                if (A[z]==1 && Zuordnung[z]==CurrentMachine){
+                if (A[z]==1 && Allocation[z]==CurrentMachine){
                     B[z]=1;
                 }
                 else{
@@ -311,68 +319,72 @@ public class Individuum {
                 }
             }
             
-            // GT - Schritt 2.H3: Ermittlung von OperationStrichStrich
-            int FruhsteStartzeit = 1000;
+            // GT - Step 2.H3: Get O'' (Operation of B with ealiest starting Time)
+            int earliestStartingtime = 1000;
             for (int z=0;z<nOp;z++){
-                if (B[z]==1 && max(StartzeitenMatrix[z])<FruhsteStartzeit){
-                    OperationStrichStrich = z;
-                    FruhsteStartzeit = max(StartzeitenMatrix[z]);
+                if (B[z]==1 && max(startingTimeMatrix[z])<earliestStartingtime){
+                    operationDashDash = z;
+                    earliestStartingtime = max(startingTimeMatrix[z]);
                 }
             }
 
-            // GT - Schritt 2.H4: Operationen außerhalb des Zeitfensters entfernen
 
-            int Belegungszeit = Machines.get(CurrentMachine).Belegungszeit;
-            int Startzeit;
-            if (max(StartzeitenMatrix[OperationStrichStrich])<Belegungszeit){
-                Startzeit = Belegungszeit;
+            // GT - Step 2.H4: Delete operations outside of the sigma window
+            
+            //Check if earliest starttime is smaller then occupation
+            int starttime;
+            if (max(startingTimeMatrix[operationDashDash]) < Machines.get(CurrentMachine).timeOccupation){
+                starttime = Machines.get(CurrentMachine).timeOccupation;
             }
             else{
-                Startzeit = max(StartzeitenMatrix[OperationStrichStrich]);
+                starttime = max(startingTimeMatrix[operationDashDash]);
             } 
             
             double sigma = 0.5;
 
+            // Delete Operations outside
             for (int z=0;z<nOp;z++){
-                if (B[z]==1){
-                    if (max(StartzeitenMatrix[z]) > (Startzeit + sigma * (Fertigungszeiten[OperationStrich] - Startzeit))){
-                        B[z] = 0;
-                    }
+                if (B[z]==1 && max(startingTimeMatrix[z]) > (starttime + sigma * (timesProduction[operationDash] - starttime))){
+                    B[z] = 0;
                 }
             }
 
-            //GT - Schritt 2.H5: OperationStern ermitteln
 
+            //GT - Step 2.H5: Get O*
             int Permutation = 1000;
             for (int z=0;z<nOp;z++){
-                if (B[z]==1 && Sequenz[z]<Permutation){
-                    Permutation = Sequenz[z];
-                    OperationStern = z;
+                if (B[z]==1 && Sequence[z]<Permutation){
+                    Permutation = Sequence[z];
+                    operationStar = z;
                 }
             }
 
-            //OperationStern aus A löschen
-            A[OperationStern] = -1;
+
+            // Mark OperationStern as done
+            A[operationStar] = -1; // OperationStar is done, mark with -1 in A
             for (int z=0;z<nOp;z++){
                 if (A[z] != -1){
-                    V[z][OperationStern] = 0;
+                    V[z][operationStar] = 0; // OperationStar is no longer predecessor of other operations
                 }
             }
-            V[OperationStern] = OneValue(V[OperationStern], -1);
+            V[operationStar] = OneValue(V[operationStar], -1); // OperationStar is done, mark with -1 in V
 
-            if (max(StartzeitenMatrix[OperationStern]) < Belegungszeit){
-                StartzeitenOp[OperationStern] = Belegungszeit;
+            // Set the starting time of operationStar
+            if (max(startingTimeMatrix[operationStar]) < Machines.get(CurrentMachine).timeOccupation){
+                Process.get(operationStar).timeStart = Machines.get(CurrentMachine).timeOccupation;
             }
-            if (max(StartzeitenMatrix[OperationStern]) >= Belegungszeit){
-                StartzeitenOp[OperationStern] = max(StartzeitenMatrix[OperationStern]);
+            if (max(startingTimeMatrix[operationStar]) >= Machines.get(CurrentMachine).timeOccupation){
+                Process.get(operationStar).timeStart = max(startingTimeMatrix[operationStar]);
             }
 
-            EndzeitenOp[OperationStern] = StartzeitenOp[OperationStern] + ProzesszeitenOp[OperationStern];
+            // Set the ending time of operationStar
+            Process.get(operationStar).timeEnd = Process.get(operationStar).timeStart + Process.get(operationStar).timeWorking;
 
-            Machines.get(CurrentMachine).Belegungszeit = EndzeitenOp[OperationStern];
+            // Set new occupation time of the current machine
+            Machines.get(CurrentMachine).timeOccupation = Process.get(operationStar).timeEnd;
 
-            // GT - Schritt 4: Nachfolger von O* zu A hinzufügen
 
+            // GT - Schritt 4: Add successors of O* to A
             for (int z=0;z<nOp;z++){
 
                 if (max(V[z]) == 0){
@@ -386,91 +398,101 @@ public class Individuum {
                 }
             }
 
-            // GT - Schritt 5: Belegungszeiten aktualisieren
+            // GT - Schritt 5: Update occupation time of the current machine to every operation which is also done on that machine
             for (int z=0;z<nOp;z++){
-                if (A[z] != -1 && Zuordnung[z] == CurrentMachine){
-                    StartzeitenMatrix[z][nOp] = EndzeitenOp[OperationStern];
+                if (A[z] != -1 && Allocation[z] == CurrentMachine){
+                    startingTimeMatrix[z][nOp] = Process.get(operationStar).timeEnd;
                 }
             }
 
 
-            // 
-            // StartzeitenMatrix bestimmen
-            AnfangsOp = OneValue(AnfangsOp, 0);
-            VorgängerOp = CopyArray(Vorrangmatrix);
+            //Update startingTimeMatrix, bc of new occupation time
+            // Get the predecessors of every Operation  and save them under Process.get(x).Predecessors
+            for (int i=0;i<nOp;i++){
+                System.arraycopy(Vorrangmatrix[i], Vorrangmatrix[i][0], Process.get(i).Predecessor, Process.get(i).Predecessor[0],Vorrangmatrix[i].length);
+            }
 
+            // Get the starting Operations
             for (int z=0;z<nOp;z++){
-                if (max(VorgängerZeiten[z])<0.1){
-                    AnfangsOp[z]=1;
+                if (max(predecessorTimes[z])==0){
+                    Process.get(z).operationReadyToStart = true;
+                    Process.get(z).operationNotReady = false;
                 }
             }
-        
 
+            // Calculate startingTimeMatrix: t_Op = t_PredecessorStart(from startingTimeMatrix) + t_PredecessorProcess(from predecessorTimes);
             OperationsDone = 0;
             while (OperationsDone < nOp){
 
-                //Startzeiten einer Operation: t = Startzeit des Vorgängers und Prozesszeit des Vorgängers (steht in VorgängerZeiten schon drin)
+                
                 for (int z=0;z<nOp;z++){
                     int FoundOp = 0;
-                    if (AnfangsOp[z] == 1){
+
+                    // Search for starting Operation
+                    if (Process.get(z).operationReadyToStart == true){
                         FoundOp = z;
                         for (int z2=0;z2<nOp;z2++){
-                            if (VorgängerZeiten[z2][FoundOp] !=0){
-                                StartzeitenMatrix[z2][FoundOp] = max(StartzeitenMatrix[FoundOp]) + VorgängerZeiten[z2][FoundOp];
+                            if (predecessorTimes[z2][FoundOp] !=0){
+                                startingTimeMatrix[z2][FoundOp] = max(startingTimeMatrix[FoundOp]) + predecessorTimes[z2][FoundOp]; //t_Op = t_PredecessorStart(from startingTimeMatrix) + t_PredecessorProcess(from predecessorTimes)
                             }
                         }
 
+                    // Mark the found operation as done
                     for (int z3=0;z3<nOp;z3++){
-                        if (VorgängerOp[z3][FoundOp] == 1){
-                            VorgängerOp[z3][FoundOp] = 0; // FoundOp gilt als ausgeführt und ist daher nicht länger Vorgänger der Operation in Zeile s
+                        if (Process.get(z3).Predecessor[FoundOp] == 1){
+                            Process.get(z3).Predecessor[FoundOp] = 0; // FoundOp is done and is now no longer a predecessor on which other operations have to wait for
                         }
-                        
                     }
 
-                    VorgängerOp[FoundOp] = OneValue(VorgängerOp[FoundOp],-1);
-                    AnfangsOp[FoundOp] = -1;
-
+                    Process.get(FoundOp).operationDone = true;
                     }
                 }
 
-                //Anfangsoperationen neu bestimmen
+                //Calculate new  Starting Operations
                 for (int z=0;z<nOp;z++){
-                    if (max(VorgängerOp[z])==0){
-                        AnfangsOp[z] = 1;
+
+                    // Operation has no remaining Predecessor and wasnt done yet: Ready to Start
+                    if (max(Process.get(z).Predecessor)==0 && Process.get(z).operationDone == false){
+                        Process.get(z).operationReadyToStart = true;
+                        Process.get(z).operationNotReady = false;
                     }
-                    if (max(VorgängerOp[z])==-1){
-                        AnfangsOp[z] = -1;
+
+                    // Operation has no remaining Predecessor, but i already done
+                    if (max(Process.get(z).Predecessor)==0 && Process.get(z).operationDone == true){
+                        Process.get(z).operationReadyToStart = false;
+                        Process.get(z).operationNotReady = false;
                     }
-                    if (max(VorgängerOp[z]) == 1){
-                        AnfangsOp[z] = 0;
+
+                    // Operation still has remaining Predecessors
+                    if (max(Process.get(z).Predecessor)!=0){
+                        Process.get(z).operationNotReady = true;
                     }
                 }
 
 
-                //Abbruchbedingungen ermitteln
-                OperationsDone = Count(AnfangsOp, -1);
+                // Get termination condition
+                OperationsDone = 0;
+                for (int z=0;z<nOp;z++){
+                    if(Process.get(z).operationDone == true){
+                        OperationsDone++;
+                    }
+                }
             }
 
 
-            //Fertigungszeiten berechnen
+            //Calculate production times
             for (int z=0;z<nOp;z++){
-                Fertigungszeiten[z] = max(StartzeitenMatrix[z]) + ProzesszeitenOp[z];
+                timesProduction[z] = max(startingTimeMatrix[z]) + Process.get(z).timeWorking;
             }
 
-            //Give the working Machine some Information about the Operation
-            Machines.get(CurrentMachine).PlannedOperations = AddOneToArray(Machines.get(CurrentMachine).PlannedOperations, OperationStern);
-            Machines.get(CurrentMachine).Startzeiten = AddOneToArray(Machines.get(CurrentMachine).Startzeiten, StartzeitenOp[OperationStern]);
-            Machines.get(CurrentMachine).Endzeiten = AddOneToArray(Machines.get(CurrentMachine).Endzeiten, EndzeitenOp[OperationStern]);
+            //Give the working Machine some Information about the Operation: Needed for the BarChart
+            Machines.get(CurrentMachine).PlannedOperations = AddOneToArray(Machines.get(CurrentMachine).PlannedOperations, operationStar);
+            Machines.get(CurrentMachine).Startzeiten = AddOneToArray(Machines.get(CurrentMachine).Startzeiten, Process.get(operationStar).timeStart);
+            Machines.get(CurrentMachine).Endzeiten = AddOneToArray(Machines.get(CurrentMachine).Endzeiten, Process.get(operationStar).timeEnd);
 
             // Abbruchbedingung bestimmen
             GTAbbruchbedingung = Count(A, -1);
         }
-
-        for (int i=0;i<nOp;i++){
-            Prozess.get(i).Startzeit = StartzeitenOp[i];
-            Prozess.get(i).Endzeit = EndzeitenOp[i];
-        }
-
     }
 
 
@@ -480,11 +502,11 @@ public class Individuum {
         for (int i = 0; i<N; i++) {
             double random = Zufallszahl();
             if (random<MutProbability){
-                if (Zuordnung[i]==1){
-                    Zuordnung[i]=0;
+                if (Allocation[i]==1){
+                    Allocation[i]=0;
                 } 
                 else {
-                    Zuordnung[i]=1;
+                    Allocation[i]=1;
                 }
             }
         }
@@ -508,24 +530,24 @@ public class Individuum {
 
             int[] tempArr = new int[sectionEnd-sectionStart];
             if (typeCoding == 0){
-                System.arraycopy(Zuordnung, sectionStart, tempArr, 0, sectionEnd-sectionStart);
+                System.arraycopy(Allocation, sectionStart, tempArr, 0, sectionEnd-sectionStart);
                 List<Integer> tempList = new ArrayList();
                 for (int k=0;k<tempArr.length;k++){
                     tempList.add(tempArr[k]);
                 }
                 Collections.shuffle(tempList);
                 int[] MixedArr = tempList.stream().mapToInt(i->i).toArray();
-                System.arraycopy(MixedArr, 0, Zuordnung, sectionStart, sectionEnd-sectionStart);
+                System.arraycopy(MixedArr, 0, Allocation, sectionStart, sectionEnd-sectionStart);
             }
             else if (typeCoding == 1){
-                System.arraycopy(Sequenz, sectionStart, tempArr, 0, sectionEnd-sectionStart);
+                System.arraycopy(Sequence, sectionStart, tempArr, 0, sectionEnd-sectionStart);
                 List<Integer> tempList = new ArrayList();
                 for (int k=0;k<tempArr.length;k++){
                     tempList.add(tempArr[k]);
                 }
                 Collections.shuffle(tempList);
                 int[] MixedArr = tempList.stream().mapToInt(i->i).toArray();
-                System.arraycopy(MixedArr, 0, Sequenz, sectionStart, sectionEnd-sectionStart);
+                System.arraycopy(MixedArr, 0, Sequence, sectionStart, sectionEnd-sectionStart);
             }
             else{
                 System.out.println("Wrong Input for Coding Type of Mixed Mutation");
@@ -542,9 +564,9 @@ public class Individuum {
             if (random<MutProbability) {
                 double random2 = round(Zufallszahl()*(N-1),0);
                 int randomposition = (int)random2;
-                int saveNumber = Sequenz[randomposition];
-                Sequenz[randomposition] = Sequenz[i];
-                Sequenz[i] = saveNumber;
+                int saveNumber = Sequence[randomposition];
+                Sequence[randomposition] = Sequence[i];
+                Sequence[i] = saveNumber;
             }
         }
     }

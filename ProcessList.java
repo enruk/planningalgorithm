@@ -22,7 +22,7 @@ public class ProcessList {
     int AnzOp;
     int[][] Präzedenzmatrix;
     int[][] Maschinenmatrix;
-    List<Operationen> OperationenListe; 
+    List<Operationen> OperationenListe; // Umbennen in generellProcess, processInformation, 
 
 
     // Konstruktor
@@ -86,7 +86,7 @@ public class ProcessList {
         OperationenListe = new ArrayList<Operationen>(AnzOp);
         //List<Operationen> OperationenListe = new ArrayList<Operationen>(AnzOp);
         for (int i=0;i<AnzOp;i++) {
-            Operationen Op = new Operationen();
+            Operationen Op = new Operationen(AnzOp,AnzMa);
             OperationenListe .add(Op);
         }
 
@@ -110,7 +110,7 @@ public class ProcessList {
 
                 // Name oder Beschreibung
                 Cell CellName = Zeile.getCell(ZeileName);
-                CurrentOp.Operationsname = CellName.toString();
+                CurrentOp.opName = CellName.toString();
 
                 // Vorgänger
                 Cell CellVor = Zeile.getCell(ZeileVor);
@@ -121,12 +121,12 @@ public class ProcessList {
                     double VorDouble = Double.parseDouble(StringVor[i]);
                     VorgängerArray[i] = (int)VorDouble;
                 }
-                CurrentOp.Vorgänger = VorgängerArray;
+                CurrentOp.Predecessor = VorgängerArray;
 
 
                 // Maschinen und Bearbeitungszeit auslesen  
                 CurrentOp.Bearbeitungszeit = new int[AnzMa];
-                CurrentOp.Maschinen = new int[AnzMa];
+                CurrentOp.Machines = new int[AnzMa];
 
                 //int AnzMaschinenOp = 0;
                 for (int MaIterator = 0;MaIterator<AnzMa;MaIterator++){
@@ -139,7 +139,7 @@ public class ProcessList {
                     }
                     else{
                         CurrentOp.Bearbeitungszeit[MaIterator] = ZeitMaschine;
-                        CurrentOp.Maschinen[MaIterator] = 1;
+                        CurrentOp.Machines[MaIterator] = 1;
                         //AnzMaschinenOp++;
                     }
 
@@ -157,8 +157,8 @@ public class ProcessList {
         // Präzedenzmatrix aus Operationenliste erstellen
         Präzedenzmatrix = new int[AnzOp][AnzOp];
         for (int i=0;i<AnzOp;i++){
-            for (int j=0;j<OperationenListe.get(i).Vorgänger.length;j++){
-            int VorProzess = OperationenListe.get(i).Vorgänger[j];
+            for (int j=0;j<OperationenListe.get(i).Predecessor.length;j++){
+            int VorProzess = OperationenListe.get(i).Predecessor[j];
                 if (VorProzess != 0){
                 Präzedenzmatrix[i][VorProzess-1] = 1;
                 }

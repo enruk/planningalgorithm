@@ -3,7 +3,7 @@ package planningalgorithm;
 public class Machine {
     int Nummer;
     String Name;
-    int Belegungszeit;
+    int timeOccupation;
     int BelegungszeitLastRun;
     int[] PlannedOperations;
     int[] Startzeiten;
@@ -13,7 +13,7 @@ public class Machine {
 
     Machine(int Num, int BelegteZeit){
         Nummer = Num;
-        Belegungszeit = BelegteZeit;
+        timeOccupation = BelegteZeit;
     }
 
 

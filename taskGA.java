@@ -193,13 +193,13 @@ public class taskGA extends Task<List<Integer>> {
 class FitnessComparator implements Comparator<Individuum> {
     @Override
     public int compare(Individuum a, Individuum b) {
-        return a.TimeFitness < b.TimeFitness ? 1 : a.TimeFitness == b.TimeFitness ? 0 : -1;
+        return a.timeFitness < b.timeFitness ? 1 : a.timeFitness == b.timeFitness ? 0 : -1;
     }
 }
 
 class TournamentWinsComparator implements Comparator<Individuum> {
     @Override
     public int compare(Individuum a, Individuum b) {
-        return a.TournamentWins < b.TournamentWins ? 1 : a.TournamentWins == b.TournamentWins ? 0 : -1;
+        return a.tournamentWins < b.tournamentWins ? 1 : a.tournamentWins == b.tournamentWins ? 0 : -1;
     }
 }

@@ -1,36 +1,25 @@
 package planningalgorithm;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.chart.*;
-import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -48,14 +37,10 @@ public class gui extends Application {
     int maxGen;
     int currentgen;
     StringProperty outputtest = new SimpleStringProperty();
-    //final ProgressBar progrBar = new ProgressBar();
-    //final ProgressIndicator pins = new ProgressIndicator();
-    //final HBox hb = new HBox();
 
     String filepath;
     Scene menu;
     Scene settings;
-    private TestTask test1;
 
     public static int[] AddToArray(int[] Arr, int what, int n) {
         int[] NewArr = new int[Arr.length + n];
@@ -79,13 +64,16 @@ public class gui extends Application {
         primaryStage.setMinHeight(500);
         primaryStage.setMinWidth(500);
 
+        Font titleFont = new Font("Arial", 32);
+        Font captionFont = new Font("Arial", 20);
+
         // SETTINGS
         BorderPane SettingsLayout = new BorderPane();
         SettingsLayout.setPadding(new Insets(20, 20, 20, 20));
 
         // Top
         Label TitleSettings = new Label("Settings genetic algorithm");
-        TitleSettings.setFont(new Font("Arial", 32));
+        TitleSettings.setFont(titleFont);
         SettingsLayout.setTop(TitleSettings);
 
         // RIGHT
@@ -93,7 +81,7 @@ public class gui extends Application {
         VBoxRightSet.setPadding(new Insets(50, 0, 10, 0));
 
         Label TitleSelection = new Label("Selection");
-        TitleSelection.setFont(new Font("Arial", 20));
+        TitleSelection.setFont(captionFont);
 
         HBox SetQTour = new HBox(20);
         Label TitleSetQTour = new Label("Q - Tournaments");
@@ -110,7 +98,7 @@ public class gui extends Application {
         SetSelReplace.getChildren().addAll(TitleSetSelReplace, SelReplace);
 
         Label TitleFitness = new Label("Fitness");
-        TitleFitness.setFont(new Font("Arial", 20));
+        TitleFitness.setFont(captionFont);
 
         HBox SetRanks = new HBox(20);
         Label TitleSetRanks = new Label("Number of Ranks");
@@ -144,7 +132,7 @@ public class gui extends Application {
         VBoxCenterSet.setPadding(new Insets(50, 0, 10, 0));
 
         Label TitleMutationAllo = new Label("Mutation Allocation");
-        TitleMutationAllo.setFont(new Font("Arial", 20));
+        TitleMutationAllo.setFont(captionFont);
 
         HBox CheckMut1 = new HBox(20);
         Label TitleCheck1 = new Label("Mutation Type");
@@ -179,7 +167,7 @@ public class gui extends Application {
         SetMutAllo.getChildren().addAll(TitleSetMutAllo, MutAlloProb);
 
         Label TitleMutationSeq = new Label("Mutation Sequence");
-        TitleMutationSeq.setFont(new Font("Arial", 20));
+        TitleMutationSeq.setFont(captionFont);
 
         HBox CheckMut2 = new HBox(20);
         Label TitleCheckMut2 = new Label("Mutation Type");
@@ -214,7 +202,7 @@ public class gui extends Application {
         SetMutSeq.getChildren().addAll(TitleSetMutSeq, MutSeqProb);
 
         Label TitleRecombinationAllo = new Label("Recombination Allocation");
-        TitleRecombinationAllo.setFont(new Font("Arial", 20));
+        TitleRecombinationAllo.setFont(captionFont);
 
         HBox CheckRec1 = new HBox(20);
         Label TitleCheckRec1 = new Label("Recombination Type");
@@ -256,7 +244,7 @@ public class gui extends Application {
         RecN.getChildren().addAll(TitleSetRecN, SetRecN);
 
         Label TitleRecombinationSeq = new Label("Recombination Sequence");
-        TitleRecombinationSeq.setFont(new Font("Arial", 20));
+        TitleRecombinationSeq.setFont(captionFont);
 
         HBox CheckRec2 = new HBox(20);
         Label TitleCheckRec2 = new Label("Recombination Type");
@@ -316,7 +304,7 @@ public class gui extends Application {
         VBox VBoxTop = new VBox(20);
 
         Label TitleTop = new Label("File input");
-        TitleTop.setFont(new Font("Arial", 28));
+        TitleTop.setFont(titleFont);
         HBox HBoxTop = new HBox(20);
 
         TextField ProcessInput = new TextField("C:/Users/Henrik/Documents/ExampleProcess.xls");
@@ -340,7 +328,7 @@ public class gui extends Application {
         // CENTER
         VBox VBoxCenter = new VBox(20);
         Label TitleCenter = new Label("Input of the process variables");
-        TitleCenter.setFont(new Font("Arial", 20));
+        TitleCenter.setFont(captionFont);
         VBoxCenter.setPadding(new Insets(50, 0, 10, 0));
 
         HBox NumRes = new HBox(20);
@@ -389,7 +377,6 @@ public class gui extends Application {
         currentGen.setMinWidth(200);
 
         final ProgressBar progressBar = new ProgressBar(0);
-        //progressBar.setMinWidth(600);
         progressBar.prefWidthProperty().bind(HBoxBottom.widthProperty().subtract(20+ButtonSettings.getWidth()+StartGA.getWidth()));
         progressBar.setMinHeight(25);
         progressBar.setProgress(0);
