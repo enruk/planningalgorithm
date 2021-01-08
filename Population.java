@@ -3,12 +3,10 @@ package planningalgorithm;
 import java.util.List;
 import java.awt.EventQueue;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 
 
 public class Population {
@@ -41,7 +39,7 @@ public class Population {
     }
 
 
-    public static double Zufallszahl() {
+    public static double randomNumber() {
         double RanNum;
         Random zufallszahl = new Random();
         RanNum = zufallszahl.nextDouble();
@@ -53,7 +51,7 @@ public class Population {
         return Math.round(value * d) / d;
     }
 
-    public int[] CopyArr (int[] Arr){
+    public int[] copyArr (int[] Arr){
         int[] Copy = new int[Arr.length];
         for (int i=0;i<Arr.length;i++){
             Copy[i] = Arr[i];
@@ -61,7 +59,7 @@ public class Population {
         return Copy;
     }
 
-    public int[][] CopyArray (int[][] Arr) {
+    public int[][] copyArray (int[][] Arr) {
         int[][] Copy = new int[Arr.length][Arr[0].length];
         for (int i = 0; i < Arr.length; i++) {
             for (int j = 0; j < Arr[0].length; j++) {
@@ -101,11 +99,11 @@ public class Population {
             exception.printStackTrace();
         }
 
-        ProzessListe = ProzessRead.OperationenListe;
+        ProzessListe = ProzessRead.processInformation;
         nOp = ProzessListe.size();
 
-        Vorrangmatrix = CopyArray(ProzessRead.Präzedenzmatrix);
-        MaschinenZeiten = CopyArray(ProzessRead.Maschinenmatrix);
+        Vorrangmatrix = copyArray(ProzessRead.Präzedenzmatrix);
+        MaschinenZeiten = copyArray(ProzessRead.Maschinenmatrix);
     }
 
     public void initializeFirstGen(){
@@ -115,11 +113,11 @@ public class Population {
             int[] RandomAllocation = new int[nOp];
             double RandomMachine;
             for (int j = 0; j < nOp; j++) {
-                RandomMachine = round(Zufallszahl() * (nMa - 1), 0);
+                RandomMachine = round(randomNumber() * (nMa - 1), 0);
                 int Machine = (int) RandomMachine;
                 RandomAllocation[j] = Machine;
             }
-            Individuen.get(i).Allocation = CopyArr(RandomAllocation);
+            Individuen.get(i).Allocation = copyArr(RandomAllocation);
         }
 
         // Zufällig Sequenz in alle Individuen befüllen
@@ -129,14 +127,14 @@ public class Population {
         }
 
         for (int i = 0; i < p; i++) {
-            int[] RandomSequenz = CopyArr(PermuSortiert);
+            int[] RandomSequenz = copyArr(PermuSortiert);
             for (int j = 0; j < nOp; j++) {
-                int randomposition = (int) round(Zufallszahl() * (nOp - 1), 0);
+                int randomposition = (int) round(randomNumber() * (nOp - 1), 0);
                 int SaveNum = RandomSequenz[j];
                 RandomSequenz[j] = RandomSequenz[randomposition];
                 RandomSequenz[randomposition] = SaveNum;
             }
-            Individuen.get(i).Sequence = CopyArr(RandomSequenz);
+            Individuen.get(i).Sequence = copyArr(RandomSequenz);
         }
     }
 
@@ -207,7 +205,7 @@ public class Population {
         }
 
         float PointerRange = SumFitness / (2*p);
-        float startPointer = PointerRange * (float)Zufallszahl();
+        float startPointer = PointerRange * (float)randomNumber();
 
         float[] PointerArray = new float[2*p];
         for (int i=0;i<2*p;i++){
@@ -259,9 +257,9 @@ public class Population {
 
         PairingRandom = new int[p*2];
         for (int i = 0; i < p*2; i++) {
-            PairingRandom = CopyArr(PairingSorted);
+            PairingRandom = copyArr(PairingSorted);
             for (int j = 0; j < p*2; j++) {
-                int randomposition = (int) round(Zufallszahl() * (p*2 - 1), 0);
+                int randomposition = (int) round(randomNumber() * (p*2 - 1), 0);
                 int SaveNum = PairingRandom[j];
                 PairingRandom[j] = PairingRandom[randomposition];
                 PairingRandom[randomposition] = SaveNum;
@@ -294,11 +292,11 @@ public class Population {
                 Cuts[0] = 0;
 
                 for (int N=1;N<RecN+1;N++){
-                    Cuts[N] = (int) round(Zufallszahl()*nOp,0);
+                    Cuts[N] = (int) round(randomNumber()*nOp,0);
                     if (N>1){
                         for (int j=0;j<N;j++){
                             while(Cuts[N] == Cuts[j] || Cuts[N]-Cuts[j]==1 || Cuts[N]-Cuts[j]==-1){
-                                Cuts[N] = (int) round(Zufallszahl()*nOp,0);
+                                Cuts[N] = (int) round(randomNumber()*nOp,0);
                             }
                         }
                     }
@@ -345,10 +343,10 @@ public class Population {
                 int sectionStart;
                 int sectionEnd;
 
-                sectionStart = (int) round(Zufallszahl()*nOp,0);
-                sectionEnd = (int) round(Zufallszahl()*nOp,0);
+                sectionStart = (int) round(randomNumber()*nOp,0);
+                sectionEnd = (int) round(randomNumber()*nOp,0);
                 while (sectionEnd == sectionStart){
-                    sectionEnd = (int) round(Zufallszahl()*nOp,0);
+                    sectionEnd = (int) round(randomNumber()*nOp,0);
                 }
                 if (sectionEnd < sectionStart){
                     int temp = sectionStart;

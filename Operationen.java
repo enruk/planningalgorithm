@@ -8,8 +8,8 @@ public class Operationen {
     int[] Predecessor;
     //ArrayList<Integer> predecessor;
     int[] remainingPredecessors;
-    int[] Machines;
-    int[] Bearbeitungszeit;
+    int[] availableMachines;
+    int[] timesProductionOnMachines;
     int timeStart;
     int timeWorking;
     int timeEnd;
@@ -24,8 +24,8 @@ public class Operationen {
         operationDone = false;
         operationNotReady = true;
         operationReadyToStart = false; 
-        Machines = new int[nMa];
+        availableMachines = new int[nMa];
         Predecessor = new int[nOp];
+        remainingPredecessors = new int[nOp];
     }
-
 }

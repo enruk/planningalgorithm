@@ -1,18 +1,18 @@
 package planningalgorithm;
 
 public class Machine {
-    int Nummer;
-    String Name;
+    int number;
+    String name;
     int timeOccupation;
-    int BelegungszeitLastRun;
-    int[] PlannedOperations;
-    int[] Startzeiten;
-    int[] Endzeiten;
-    int[] Ganntplan;
+    int timeOccupationLastRun;
+    int[] plannedOperations;
+    int[] startingTimesOps;
+    int[] endingTimesOps;
+    int[] ganntPlan;
 
 
     Machine(int Num, int BelegteZeit){
-        Nummer = Num;
+        number = Num;
         timeOccupation = BelegteZeit;
     }
 

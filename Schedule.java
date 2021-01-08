@@ -48,7 +48,7 @@ public class Schedule extends JFrame {
         frame.setVisible(true);
     }
     
-    public int[] AddToArray (int[] Arr, int what, int n){
+    public int[] addToArray (int[] Arr, int what, int n){
         int[] NewArr = new int[Arr.length+n];
         for (int i=0;i<Arr.length;i++){
             NewArr[i] = Arr[i];
@@ -66,8 +66,8 @@ public class Schedule extends JFrame {
         //Get the maximum amount of operations of all machines
         int MaxOp = 0;
         for (int i=0;i<AnzMaschinen;i++){
-            if(Ressourcen.get(i).PlannedOperations != null){
-                int temp = Ressourcen.get(i).PlannedOperations.length;
+            if(Ressourcen.get(i).plannedOperations != null){
+                int temp = Ressourcen.get(i).plannedOperations.length;
                 if (temp>MaxOp){
                     MaxOp = temp;
                 }
@@ -76,41 +76,41 @@ public class Schedule extends JFrame {
 
         // Fill sequences of all other machines with zeros
         for (int i=0;i<AnzMaschinen;i++){
-            if (Ressourcen.get(i).PlannedOperations != null){
-                int AnzOps = Ressourcen.get(i).PlannedOperations.length;
+            if (Ressourcen.get(i).plannedOperations != null){
+                int AnzOps = Ressourcen.get(i).plannedOperations.length;
                 if (AnzOps<MaxOp){
                     int DiffOps = MaxOp - AnzOps;
-                    Ressourcen.get(i).Startzeiten = AddToArray(Ressourcen.get(i).Startzeiten, 0, DiffOps);
-                    Ressourcen.get(i).Endzeiten = AddToArray(Ressourcen.get(i).Endzeiten, 0, DiffOps);
-                    Ressourcen.get(i).PlannedOperations = AddToArray(Ressourcen.get(i).PlannedOperations,0,DiffOps);
+                    Ressourcen.get(i).startingTimesOps = addToArray(Ressourcen.get(i).startingTimesOps, 0, DiffOps);
+                    Ressourcen.get(i).endingTimesOps = addToArray(Ressourcen.get(i).endingTimesOps, 0, DiffOps);
+                    Ressourcen.get(i).plannedOperations = addToArray(Ressourcen.get(i).plannedOperations,0,DiffOps);
                 }
             }
             else{
-                Ressourcen.get(i).Startzeiten = new int[MaxOp];
-                Ressourcen.get(i).Endzeiten = new int[MaxOp];
-                Ressourcen.get(i).PlannedOperations = new int[MaxOp];
+                Ressourcen.get(i).startingTimesOps = new int[MaxOp];
+                Ressourcen.get(i).endingTimesOps = new int[MaxOp];
+                Ressourcen.get(i).plannedOperations = new int[MaxOp];
             }
         }
 
         //Filling Array Ganttplan which is needed to create the XYChart.Series
         for (int i=0;i<AnzMaschinen;i++){
-            Ressourcen.get(i).Ganntplan = new int[2*MaxOp];
-            Ressourcen.get(i).Ganntplan[0] = Ressourcen.get(i).Startzeiten[0]; //Startzeit der erste Op = Belegungszeit, Index 0, Comment: Nicht ungebingt
+            Ressourcen.get(i).ganntPlan = new int[2*MaxOp];
+            Ressourcen.get(i).ganntPlan[0] = Ressourcen.get(i).startingTimesOps[0]; //Startzeit der erste Op = Belegungszeit, Index 0, Comment: Nicht ungebingt
             for (int j=1;j<MaxOp;j++){
-                Ressourcen.get(i).Ganntplan[2*j-1] = Ressourcen.get(i).Endzeiten[j-1] - Ressourcen.get(i).Startzeiten[j-1];  //Prozess, Index: 1,3,5,
-                if (Ressourcen.get(i).Endzeiten[j-1]<Ressourcen.get(i).Startzeiten[j]){
-                    Ressourcen.get(i).Ganntplan[2*j] = Ressourcen.get(i).Startzeiten[j] - Ressourcen.get(i).Endzeiten[j-1];// Pause, Index: 2,4,5,6
+                Ressourcen.get(i).ganntPlan[2*j-1] = Ressourcen.get(i).endingTimesOps[j-1] - Ressourcen.get(i).startingTimesOps[j-1];  //Prozess, Index: 1,3,5,
+                if (Ressourcen.get(i).endingTimesOps[j-1]<Ressourcen.get(i).startingTimesOps[j]){
+                    Ressourcen.get(i).ganntPlan[2*j] = Ressourcen.get(i).startingTimesOps[j] - Ressourcen.get(i).endingTimesOps[j-1];// Pause, Index: 2,4,5,6
                 }
             }
-            Ressourcen.get(i).Ganntplan[2*MaxOp-1] = Ressourcen.get(i).Endzeiten[MaxOp-1] - Ressourcen.get(i).Startzeiten[MaxOp-1];
+            Ressourcen.get(i).ganntPlan[2*MaxOp-1] = Ressourcen.get(i).endingTimesOps[MaxOp-1] - Ressourcen.get(i).startingTimesOps[MaxOp-1];
         }
 
 
 
-        double[][] data = new double[Ressourcen.get(0).Ganntplan.length][AnzMaschinen];
-        for (int i=0;i<Ressourcen.get(0).Ganntplan.length;i++){
+        double[][] data = new double[Ressourcen.get(0).ganntPlan.length][AnzMaschinen];
+        for (int i=0;i<Ressourcen.get(0).ganntPlan.length;i++){
             for (int j=0;j<AnzMaschinen;j++){
-                data[i][j] = Ressourcen.get(j).Ganntplan[i];
+                data[i][j] = Ressourcen.get(j).ganntPlan[i];
             }
         }
         return DatasetUtilities.createCategoryDataset("Operations", "Machine ", data);
@@ -152,20 +152,20 @@ public class Schedule extends JFrame {
                 if (dataset.getValue(row, col) != null) {
                     Number value = dataset.getValue(row, col);
                     double valuedouble = value.doubleValue();
-                    double OperationsName;
+                    int OperationsName;
                     if (row%2 == 0 || row == 0) {
                         //Do nothing
                     }
                     else { 
                         int valueint = value.intValue();
                         if ( valueint != 0){
-                            OperationsName = Res.get(col).PlannedOperations[PlannedOpsCounter];
+                            OperationsName = Res.get(col).plannedOperations[PlannedOpsCounter]+1;
                             PlannedOpsCounter++;
 
                             //  display as decimal integer
                             NumberFormat nf = DecimalFormat.getIntegerInstance();
                             // Create the annotation
-                            CategoryTextAnnotation cta = new CategoryTextAnnotation(nf.format(Math.round(OperationsName)),dataset.getColumnKey(col), AddedValues + valuedouble*0.5);
+                            CategoryTextAnnotation cta = new CategoryTextAnnotation(nf.format(OperationsName),dataset.getColumnKey(col), AddedValues + valuedouble*0.5);
                             Font font = new Font("Courier", Font.BOLD,12);
                             cta.setFont(font);
                             // Add to the plot
