@@ -18,9 +18,9 @@ public class Population {
     int currentgen;
 
     int nOp;                            // From ProcessRead Excel
-    List<Operationen> ProzessListe;     // From ProcessRead Excel
-    int[][] Vorrangmatrix;              // From ProcessRead Excel
-    int[][] MaschinenZeiten;            // From ProcessRead Excel
+    List<Operationen> readProcess;     // From ProcessRead Excel
+    int[][] precedenceMatrix;           // From ProcessRead Excel
+    int[][] machineTimes;               // From ProcessRead Excel
 
     int[] PairingSorted;
     int[] PairingRandom;
@@ -89,21 +89,21 @@ public class Population {
         return minimum;
     }
 
-    public void readData (){
+    public void readData (String filepath){
         // EXCELDATEI AUSLESEN
 
         ProcessList ProzessRead = new ProcessList();
         try {
-            ProzessRead.ReadoutExcel(nMa);
+            ProzessRead.ReadoutExcel(nMa,filepath);
         } catch (IOException exception) {
             exception.printStackTrace();
         }
 
-        ProzessListe = ProzessRead.processInformation;
-        nOp = ProzessListe.size();
+        readProcess = ProzessRead.processInformation;
+        nOp = readProcess.size();
 
-        Vorrangmatrix = copyArray(ProzessRead.Präzedenzmatrix);
-        MaschinenZeiten = copyArray(ProzessRead.Maschinenmatrix);
+        precedenceMatrix = copyArray(ProzessRead.Präzedenzmatrix);
+        machineTimes = copyArray(ProzessRead.machineMatrix);
     }
 
     public void initializeFirstGen(){

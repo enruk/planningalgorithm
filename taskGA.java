@@ -8,17 +8,20 @@ import java.util.Comparator;
 
 public class taskGA extends Task<List<Integer>> {
 
+    
     int p;
     int nMa;
     int maxGen;
     int currentGen;
     SettingsGA detailedSettings;
+    String path;
 
-    taskGA(int Populationsize, int nMachines, int maxGenerations, SettingsGA Settings){  
+    taskGA(int Populationsize, int nMachines, int maxGenerations, SettingsGA Settings, String filepath){  
         p = Populationsize;             //Source: GUI
         nMa = nMachines;                //Source: GUI
         maxGen = maxGenerations;        //Source: GUI
         detailedSettings = Settings;    //Source: GUI
+        path = filepath;                //Source: GUI
     }
     
     @Override 
@@ -29,7 +32,7 @@ public class taskGA extends Task<List<Integer>> {
         Population P = new Population(p,nMa,maxGen,detailedSettings);
 
         // Read Data
-        P.readData();
+        P.readData(path);
 
 
         // Create Population
@@ -49,8 +52,8 @@ public class taskGA extends Task<List<Integer>> {
 
         // Decoding First Generation
         for (int i=0;i<p;i++){
-            P.Individuen.get(i).correctingAllocation( P.ProzessListe);
-            P.Individuen.get(i).decodierung(P.Vorrangmatrix,P.MaschinenZeiten);
+            P.Individuen.get(i).correctingAllocation(P.readProcess);
+            P.Individuen.get(i).decodierung(P.precedenceMatrix,P.machineTimes);
         }
 
         // Put Individuals in Temp
@@ -132,8 +135,8 @@ public class taskGA extends Task<List<Integer>> {
 
             // Decoding Children
             for (int i=0;i<p;i++){
-                P.Children.get(i).correctingAllocation(P.ProzessListe);
-                P.Children.get(i).decodierung(P.Vorrangmatrix,P.MaschinenZeiten);
+                P.Children.get(i).correctingAllocation(P.readProcess);
+                P.Children.get(i).decodierung(P.precedenceMatrix,P.machineTimes);
             }
 
             // Ersetzungsstrategie

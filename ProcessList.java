@@ -2,11 +2,9 @@ package planningalgorithm;
 
 import java.util.List;
 import java.util.ArrayList;
-//import java.util.Arrays;
 
 import java.io.File;
 import java.io.FileInputStream;
-//import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -21,7 +19,7 @@ public class ProcessList {
     // Klassenattribute
     int nOp;
     int[][] Präzedenzmatrix;
-    int[][] Maschinenmatrix;
+    int[][] machineMatrix;
     List<Operationen> processInformation; // Umbennen in generellProcess, processInformation, 
 
 
@@ -52,14 +50,14 @@ public class ProcessList {
 
 
     // Get all necessory informations from excel sheet
-    void ReadoutExcel(int nMa) throws IOException {
+    void ReadoutExcel(int nMa, String filepath) throws IOException {
 
-        FileInputStream inputStream = new FileInputStream(new File("C:/Users/User/Documents/ExampleProject/Prozess1.xls"));
+        FileInputStream inputStream = new FileInputStream(new File(filepath));
         HSSFWorkbook excelmappe = new HSSFWorkbook(inputStream);
         HSSFSheet table = excelmappe.getSheetAt(0);
 
 
-        // Seach for Columns with Information
+        // Seach for Columns with Information: really poorly done, need to change this
         int fistRow = table.getFirstRowNum();
         int rowNumber = findinRow(fistRow,"No.",table);
         int rowName = findinRow(fistRow,"Description",table);
@@ -159,10 +157,10 @@ public class ProcessList {
 
 
         // Maschinenmatrix aus OperationenListe 
-        Maschinenmatrix = new int[nOp][nOp];
+        machineMatrix = new int[nOp][nOp];
         for (int i=0;i<nOp;i++){
             for (int j=0;j<nMa;j++){
-                Maschinenmatrix[i][j] = processInformation.get(i).timesProductionOnMachines[j];
+                machineMatrix[i][j] = processInformation.get(i).timesProductionOnMachines[j];
             }
         }
     }

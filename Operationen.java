@@ -1,7 +1,5 @@
 package planningalgorithm;
 
-import java.util.ArrayList;
-
 public class Operationen {
     int Nummer;
     String opName;

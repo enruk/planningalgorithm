@@ -211,7 +211,7 @@ public class gui extends Application {
         recBoxAlloNPoint.setText("N - Point - Recombination");
         recBoxAlloNPoint.setSelected(true);
         CheckBox recBoxAlloUnif = new CheckBox();
-        recBoxAlloUnif.setText("Uniform - Recombination");
+        recBoxAlloUnif.setText("Uniform - Recombination (Not ready yet");
         recBoxAlloUnif.setSelected(false);
         CheckRec1.getChildren().addAll(TitleCheckRec1, recBoxAlloNPoint, recBoxAlloUnif);
 
@@ -253,7 +253,7 @@ public class gui extends Application {
         recBoxSeqOrder.setText("Order - Recombination");
         recBoxSeqOrder.setSelected(true);
         CheckBox recBoxSeqPMX = new CheckBox();
-        recBoxSeqPMX.setText("PMX - Recombination");
+        recBoxSeqPMX.setText("PMX - Recombination (Not ready yet)");
         recBoxSeqPMX.setSelected(false);
         CheckRec2.getChildren().addAll(TitleCheckRec2, recBoxSeqOrder, recBoxSeqPMX);
 
@@ -294,7 +294,7 @@ public class gui extends Application {
         SettingsLayout.setBottom(HBoxBottom2);
 
         // SET SCENE
-        settings = new Scene(SettingsLayout, 1000, 700);
+        settings = new Scene(SettingsLayout, 1200, 700);
 
         // MENU
         BorderPane MainLayout = new BorderPane();
@@ -307,7 +307,7 @@ public class gui extends Application {
         TitleTop.setFont(titleFont);
         HBox HBoxTop = new HBox(20);
 
-        TextField ProcessInput = new TextField("C:/Users/Henrik/Documents/ExampleProcess.xls");
+        TextField ProcessInput = new TextField("C:/Users/Documents/ExampleProcess.xls");
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select process (.xls only)");
@@ -319,6 +319,7 @@ public class gui extends Application {
             ProcessInput.clear();
             ProcessInput.setText(filepath);
         });
+
         HBoxTop.getChildren().addAll(ButtonChooseProcess, ProcessInput);
         HBoxTop.setHgrow(ProcessInput, Priority.ALWAYS);
 
@@ -442,9 +443,8 @@ public class gui extends Application {
                 DetailedSettings.RecSeqProbability = Float.valueOf(RecSeqProbStr);
 
 
-
                 // Create Task
-                taskGA taskGeneticAlgorithm = new taskGA(p,AnzMa,maxGen,DetailedSettings);
+                taskGA taskGeneticAlgorithm = new taskGA(p,AnzMa,maxGen,DetailedSettings,filepath);
 
                 //UnBind
                 progressBar.progressProperty().unbind();

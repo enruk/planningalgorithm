@@ -74,6 +74,8 @@ public class Schedule extends JFrame {
             }
         }
 
+
+
         // Fill sequences of all other machines with zeros
         for (int i=0;i<AnzMaschinen;i++){
             if (Ressourcen.get(i).plannedOperations != null){
@@ -92,6 +94,8 @@ public class Schedule extends JFrame {
             }
         }
 
+
+        
         //Filling Array Ganttplan which is needed to create the XYChart.Series
         for (int i=0;i<AnzMaschinen;i++){
             Ressourcen.get(i).ganntPlan = new int[2*MaxOp];
