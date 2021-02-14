@@ -75,6 +75,15 @@ public class Individuum {
         return maximum;
     }
 
+    public int[] copyArr (int[] Arr){
+        int[] Copy = new int[Arr.length];
+        for (int i=0;i<Arr.length;i++){
+            Copy[i] = Arr[i];
+        }
+        return Copy;
+    }
+
+
     public int[] AddOneToArray (int[] Arr, int what){
         // Case 1: Array is empty
         if (Arr == null){
@@ -193,11 +202,12 @@ public class Individuum {
         for (int i=0;i<nOp;i++) {
             Process.get(i).workingMachine = Allocation[i];
         }
+
         
-        // Get the predecessors of every Operation  and save them under Process.get(x).Predecessors
+        // Get the predecessors of every Operation and save them under Process.get(x).Predecessors
         for (int i=0;i<nOp;i++){
-            System.arraycopy(Vorrangmatrix[i], Vorrangmatrix[i][0], Process.get(i).Predecessor, Process.get(i).Predecessor[0],Vorrangmatrix[i].length);
-            System.arraycopy(Vorrangmatrix[i], Vorrangmatrix[i][0], Process.get(i).remainingPredecessors, Process.get(i).remainingPredecessors[0],Vorrangmatrix[i].length);
+            Process.get(i).Predecessor = copyArr(Vorrangmatrix[i]);
+            Process.get(i).remainingPredecessors = copyArr(Vorrangmatrix[i]);
         }
 
         // Get the starting Operations
@@ -428,7 +438,8 @@ public class Individuum {
 
             // Get the predecessors of every Operation  and save them under Process.get(x).Predecessors
             for (int i=0;i<nOp;i++){
-                System.arraycopy(Process.get(i).Predecessor, Process.get(i).Predecessor[0],Process.get(i).remainingPredecessors,Process.get(i).remainingPredecessors[0],Process.get(i).Predecessor.length);
+                Process.get(i).remainingPredecessors = copyArr(Process.get(i).Predecessor);
+                //System.arraycopy(Process.get(i).Predecessor, Process.get(i).Predecessor[0],Process.get(i).remainingPredecessors,Process.get(i).remainingPredecessors[0],Process.get(i).Predecessor.length);
             }
 
             // Get the new starting Operations
