@@ -13,21 +13,26 @@ PLEASE NOTE:
 Thank you
 
 
-Some notes to the programm:
+Some notes to the structure of the programm:
 - i used a Genetic Algorithm
-  - Mutation:
-  - Rekombination
-  - Selektion:
+  - Mutation: One-Bit-Mutation / Swap Mutation (for Allocation) and Mixed-Mutation / Swap-Mutation (for Sequence)
+  - Rekombination: N-Point_Recombination (Allocation) and Order-Recombination (Sequence)
+  - Selektion: Q-Tournament Selection and a Plus-Selection (Children and %Parents go to next Generation)
+  - Fitness: Productiontime based on ranks
+  
 - i used a list planning algorithm (Giffler-Thompson-Algorithm) to get only permitted schedules
-  - for reference: 
+  - for reference: Bierwirth, Christian ; Mattfeld, Dirk C.: Production Scheduling and Rescheduling with Genetic Algorithms. In: Evolutionary Computation 7 (1999), Nr. 1, S. 1–17.
   
   
-  Some notes to the excel sheet:
+ Some notes to the excel sheet:
+  - the programm is made for k jobs with n operations
+  - operations are connected with their predecessor operaion to the jobs
   - Every Operation needs a number
-  - Programm is made for n Operations and m machines (no limits)
-  - predecessors must be given
+  - Programm is made for n operations and m machines (only practical limit)
+  - predecessors must be given for every operation (except of cource for the starting operations)
   - multiple jobs can be given, every operation only need its predecessors
-  - if machine cant do an operation just put in a 0
+  - if machine cant do an operation just put in a "0"
+  
   
    
   
