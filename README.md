@@ -30,6 +30,7 @@ Some notes to the structure of the programm:
   - Every Operation needs a number
   - Programm is made for n operations and m machines (only practical limit)
   - predecessors must be given for every operation (except of cource for the starting operations)
+  - starting operations get a "0"
   - multiple jobs can be given, every operation only need its predecessors
   - if machine cant do an operation just put in a "0"
   
