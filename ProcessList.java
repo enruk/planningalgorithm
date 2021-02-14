@@ -59,10 +59,10 @@ public class ProcessList {
 
         // Seach for Columns with Information: really poorly done, need to change this
         int fistRow = table.getFirstRowNum();
-        int rowNumber = findinRow(fistRow,"No.",table);
-        int rowName = findinRow(fistRow,"Description",table);
-        int rowPre = findinRow(fistRow,"Predecessor",table);
-        int rowM1 = findinRow(fistRow,"Machine 1",table);
+        int rowNumber = 0;
+        int rowName = 1;
+        int rowPre = 2;
+        int rowM1 = 4;
         //int ZeileNach = findinRow(Erstezeile,"Nachfolger",tabelle);
 
 
