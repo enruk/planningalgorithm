@@ -33,7 +33,7 @@ public class Schedule extends JFrame {
 
         JFrame frame = new JFrame("Schedule");
         frame.setTitle("Schedule");
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        // frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLayout(new BorderLayout(0, 5));
 
         frame.add(chartPanel, BorderLayout.CENTER);
@@ -156,20 +156,21 @@ public class Schedule extends JFrame {
                 if (dataset.getValue(row, col) != null) {
                     Number value = dataset.getValue(row, col);
                     double valuedouble = value.doubleValue();
-                    int OperationsName;
+                    int operationsNumber;
                     if (row%2 == 0 || row == 0) {
                         //Do nothing
                     }
                     else { 
                         int valueint = value.intValue();
                         if ( valueint != 0){
-                            OperationsName = Res.get(col).plannedOperations[PlannedOpsCounter]+1;
+                            operationsNumber = Res.get(col).plannedOperations[PlannedOpsCounter]+1;
                             PlannedOpsCounter++;
 
                             //  display as decimal integer
-                            NumberFormat nf = DecimalFormat.getIntegerInstance();
+                            //NumberFormat nf = DecimalFormat.getIntegerInstance();
+                            String opNumber = String.valueOf(operationsNumber);
                             // Create the annotation
-                            CategoryTextAnnotation cta = new CategoryTextAnnotation(nf.format(OperationsName),dataset.getColumnKey(col), AddedValues + valuedouble*0.5);
+                            CategoryTextAnnotation cta = new CategoryTextAnnotation(opNumber,dataset.getColumnKey(col), AddedValues + valuedouble*0.5);
                             Font font = new Font("Courier", Font.BOLD,12);
                             cta.setFont(font);
                             // Add to the plot

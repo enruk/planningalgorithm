@@ -32,7 +32,7 @@ import javafx.stage.Stage;
 public class gui extends Application {
 
     List<Machine> Res;
-    int AnzMa;
+    int nMa;
     int p;
     int maxGen;
     int currentgen;
@@ -399,7 +399,7 @@ public class gui extends Application {
                 String pSizeStr = PSizeText.getText();
                 p = Integer.parseInt(pSizeStr);
                 String AnzMaStr = NumResText.getText();
-                AnzMa = Integer.parseInt(AnzMaStr);
+                nMa = Integer.parseInt(AnzMaStr);
                 String MaxGenStr = maxGText.getText();
                 maxGen = Integer.parseInt(MaxGenStr);
 
@@ -444,7 +444,7 @@ public class gui extends Application {
 
 
                 // Create Task
-                taskGA taskGeneticAlgorithm = new taskGA(p,AnzMa,maxGen,DetailedSettings,filepath);
+                taskGA taskGeneticAlgorithm = new taskGA(p,nMa,maxGen,DetailedSettings,filepath);
 
                 //UnBind
                 progressBar.progressProperty().unbind();
